@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard RT 04 RW 01 - Responsif</title>
+<title>Dashboard RT 04 RW 01 - Final</title>
 <style>
 body { font-family:'Segoe UI',sans-serif; background:#0f0f0f; color:#f1f1f1; margin:0; padding:15px; }
 h1 { text-align:center; color:#00ff88; margin-bottom:15px; font-size:1.5rem; }
@@ -86,8 +86,7 @@ function parseTanggal(tglStr){
 
 function loadSheet(sheetName){
   const url=sheets[sheetName];
-  document.getElementById("table-header").innerHTML="⏳ Memuat header...";
-  const wrapper=document.getElementById("table-wrapper"); wrapper.innerHTML="";
+  const wrapper=document.getElementById("table-wrapper"); wrapper.innerHTML="<div class='table-row'><div class='table-cell'>⏳ Memuat data...</div></div>";
   Papa.parse(url,{download:true, header:true, skipEmptyLines:true,
     complete:function(results){
       if(!results.data || results.data.length===0){
@@ -132,7 +131,7 @@ function renderTable(){
   if(dataToShow.length===0){ wrapper.innerHTML="<div class='table-row'><div class='table-cell'>Tidak ada data</div></div>"; document.getElementById("pagination").innerHTML=""; return; }
   dataToShow.forEach((r,i)=>{
     const tr=document.createElement("div"); tr.classList.add("table-row");
-    tr.innerHTML=`<div class='table-cell'>${start+i+1}</div>`+currentHeaders.map(h=>`<div class='table-cell'>${highlightText(r[h]||"",currentKeyword)}</div>`).join("");
+    tr.innerHTML="<div class='table-cell'>"+(start+i+1)+"</div>"+currentHeaders.map(h=>`<div class='table-cell'>${highlightText(r[h]||"",currentKeyword)}</div>`).join("");
     wrapper.appendChild(tr);
   });
   renderPagination();
@@ -154,8 +153,7 @@ document.getElementById("endDate").addEventListener("change",()=>{currentPage=1;
 function resetFilter(){ document.getElementById("searchBox").value=""; document.getElementById("startDate").value=""; document.getElementById("endDate").value=""; currentKeyword=""; filteredData=allData; currentPage=1; renderTable(); }
 
 async function exportPDF(){
-  const { jsPDF }=window.jspdf;
-  const doc=new jsPDF('l','pt','a4'); doc.setFontSize(10);
+  const { jsPDF }=window.jspdf; const doc=new jsPDF('l','pt','a4'); doc.setFontSize(10);
   doc.text(`Laporan ${document.getElementById("sheetSelect").value}`,40,20);
   let y=40, startX=40;
   doc.text("No",startX,y); currentHeaders.forEach((h,i)=>{ doc.text(h,startX+(i+1)*80,y); }); y+=15;
@@ -163,7 +161,7 @@ async function exportPDF(){
   doc.save(`${document.getElementById("sheetSelect").value}.pdf`);
 }
 
-// Load default
+// Load default sheet
 loadSheet(document.getElementById("sheetSelect").value);
 </script>
 </body>
