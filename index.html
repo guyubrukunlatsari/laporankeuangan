@@ -21,12 +21,17 @@
   table { width:100%; border-collapse:collapse; min-width:300px; }
   th, td { padding:5px; text-align:center; font-size:0.8rem; border-bottom:1px solid #333; }
   th { background-color:#00cc66; color:#000; }
-  td.nominal, td.jumlah { color:#00ff88; font-weight:bold; }
   td.foto img { max-width:60px; max-height:50px; border-radius:3px; display:block; margin:auto; }
   tr:nth-child(even){background:#1e1e1e;}
   tr:hover{background:#2a2a2a;}
 
   .highlight{background:#00ff44;color:#000;font-weight:bold;border-radius:3px;padding:0 2px;}
+
+  /* Tambahan khusus warna hijau untuk kolom nominal */
+  td.nominal-cell, td.jumlah-cell {
+    color: #00ff88 !important;
+    font-weight: bold;
+  }
 
   .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:5px; margin-top:5px;}
   .pagination button{padding:4px 6px; border-radius:5px; font-size:0.8rem;}
@@ -88,8 +93,6 @@ let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKe
 
 function parseDate(val) {
   if (!val) return { text: "", raw: new Date("1970-01-01") };
-
-  // Format bawaan Google Sheets (Date(2025,9,30))
   if (typeof val === "string" && val.includes("Date(")) {
     const m = val.match(/Date\((\d+),(\d+),(\d+)/);
     if (m) {
@@ -100,7 +103,6 @@ function parseDate(val) {
       return { text: `${day}-${month}-${year}`, raw: d };
     }
   }
-
   const d = new Date(val);
   if (!isNaN(d)) {
     const day = String(d.getDate()).padStart(2, '0');
@@ -108,7 +110,6 @@ function parseDate(val) {
     const year = d.getFullYear();
     return { text: `${day}-${month}-${year}`, raw: d };
   }
-
   return { text: val, raw: new Date("1970-01-01") };
 }
 
@@ -128,14 +129,12 @@ function fetchData(){
       allData=rows.map((r,i)=>{
         const t=parseDate(r[1]);
         let obj={};
-        config.columns.forEach((col,j)=>{
-          obj[col]=r[j]||"";
-        });
-        if(obj["TANGGAL"]||obj["TANGGAL"]) obj["TanggalObj"]=t.raw;
-        if(obj["TANGGAL"]) obj["TANGGAL"]=t.text;
+        config.columns.forEach((col,j)=>{ obj[col]=r[j]||""; });
+        if(obj["TANGGAL"]) obj["TanggalObj"]=t.raw;
         if(obj["TANGGAL"]) obj["TANGGAL"]=t.text;
         if(obj["JUMLAH"]) obj["JUMLAH"]=formatRupiah(obj["JUMLAH"]);
         if(obj["HASIL (Rp)"]) obj["HASIL (Rp)"]=formatRupiah(obj["HASIL (Rp)"]);
+        if(obj["NOMINAL (Rp)"]) obj["NOMINAL (Rp)"]=formatRupiah(obj["NOMINAL (Rp)"]);
         return obj;
       });
 
@@ -156,7 +155,7 @@ function fetchData(){
 
 function formatRupiah(angka){
   if(!angka) return "-";
-  const num = Number(String(angka).toString().replace(/[^0-9]/g,""));
+  const num = Number(String(angka).replace(/[^0-9]/g,""));
   return "Rp. "+num.toLocaleString("id-ID")+",-";
 }
 
@@ -206,9 +205,10 @@ function renderTable(){
     const tr=document.createElement("tr");
     tr.innerHTML=columns.map(col=>{
       let val=row[col]||"";
-      if(col==="JUMLAH" || col==="HASIL (Rp)") val=`<span class="JUMLAH">${val}</span>`;
+      let cellClass="";
+      if(["HASIL (Rp)","NOMINAL (Rp)","JUMLAH"].includes(col)) cellClass="nominal-cell";
       if(col==="FOTO" && val) val=`<img src="${val}" alt="Foto">`;
-      return `<td>${highlightText(val,currentKeyword)}</td>`;
+      return `<td class="${cellClass}">${highlightText(val,currentKeyword)}</td>`;
     }).join("");
     tbody.appendChild(tr);
   });
