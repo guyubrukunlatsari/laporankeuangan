@@ -21,7 +21,7 @@
   table { width:100%; border-collapse:collapse; min-width:300px; }
   th, td { padding:5px; text-align:center; font-size:0.8rem; border-bottom:1px solid #333; }
   th { background-color:#00cc66; color:#000; }
-  td.nominal, td.jumlah, .rupiah { color:#00ff99; font-weight:bold; }
+  td.nominal, td.jumlah { color:#00ff99; font-weight:bold; }
   td.foto img { max-width:60px; max-height:50px; border-radius:3px; display:block; margin:auto; }
   tr:nth-child(even){background:#1e1e1e;}
   tr:hover{background:#2a2a2a;}
@@ -89,7 +89,7 @@ let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKe
 function parseDate(val) {
   if (!val) return { text: "", raw: new Date("1970-01-01") };
 
-  // Format Google Sheets (Date(2025,9,30))
+  // Format bawaan Google Sheets (Date(2025,9,30))
   if (typeof val === "string" && val.includes("Date(")) {
     const m = val.match(/Date\((\d+),(\d+),(\d+)/);
     if (m) {
@@ -125,35 +125,58 @@ function fetchData(){
     try{
       const json=JSON.parse(rep.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
       const rows=json.table.rows.map(r=>r.c.map(c=>c?c.v:""));
-      allData=rows.map((r)=>{
+      allData=rows.map((r,i)=>{
         const t=parseDate(r[1]);
         let obj={};
-        config.columns.forEach((col,j)=>{ obj[col]=r[j]||""; });
+        config.columns.forEach((col,j)=>{
+          obj[col]=r[j]||"";
+        });
         if(obj["Tanggal"]||obj["TANGGAL"]) obj["TanggalObj"]=t.raw;
         if(obj["Tanggal"]) obj["Tanggal"]=t.text;
         if(obj["TANGGAL"]) obj["TANGGAL"]=t.text;
+        if(obj["JUMLAH"]) obj["JUMLAH"]=formatRupiah(obj["JUMLAH"]);
+        if(obj["Hasil (Rp)"]) obj["Hasil (Rp)"]=formatRupiah(obj["Hasil (Rp)"]);
         return obj;
       });
+
+      if(allData[0] && allData[0]["TanggalObj"]) allData.sort((a,b)=>b["TanggalObj"]-a["TanggalObj"]);
+      if(allData[0] && (allData[0]["No"]||allData[0]["NO"])) allData.forEach((row,index)=>row["No"]=allData.length - index);
+
       filteredData=allData;
       renderTable();
-      document.getElementById("update-time").textContent="Diperbarui otomatis: "+ new Date().toLocaleString("id-ID");
+      const now=new Date();
+      document.getElementById("update-time").textContent="Diperbarui otomatis: "+ now.toLocaleString("id-ID",{weekday:"short", day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
     }catch(err){
-      document.getElementById("table-body").innerHTML=`<tr><td colspan="${config.columns.length}">❌ Gagal memuat data.</td></tr>`;
+      document.getElementById("table-body").innerHTML=`<tr><td colspan="${config.columns.length}">❌ Gagal memuat data: ${err.message}</td></tr>`;
     }
-  }).catch(()=>{
-    document.getElementById("table-body").innerHTML=`<tr><td colspan="${sheetsConfig[currentSheet].columns.length}">⚠️ Tidak dapat memuat data.</td></tr>`;
+  }).catch(err=>{
+    document.getElementById("table-body").innerHTML=`<tr><td colspan="${sheetsConfig[currentSheet].columns.length}">⚠️ Tidak dapat memuat data. Periksa koneksi internet Anda.</td></tr>`;
   });
 }
 
+function formatRupiah(angka){
+  if(!angka) return "-";
+  const num = Number(String(angka).toString().replace(/[^0-9]/g,""));
+  return "Rp. "+num.toLocaleString("id-ID")+",-";
+}
+
+function highlightText(text, keyword){
+  if(!keyword) return text;
+  const regex=new RegExp(`(${keyword.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&')})`,'gi');
+  return text.replace(regex,'<span class="highlight">$1</span>');
+}
+
 function getFilteredData(){
-  const start=document.getElementById("startDate").value?new Date(document.getElementById("startDate").value):null;
-  const end=document.getElementById("endDate").value?new Date(document.getElementById("endDate").value):null;
+  const startDateVal=document.getElementById("startDate").value;
+  const endDateVal=document.getElementById("endDate").value;
+  const startDate=startDateVal?new Date(startDateVal):null;
+  const endDate=endDateVal?new Date(endDateVal):null;
   return allData.filter(row=>{
-    let ok=true;
-    if(start && row["TanggalObj"]) ok &= row["TanggalObj"]>=start;
-    if(end && row["TanggalObj"]) ok &= row["TanggalObj"]<=end;
-    if(currentKeyword) ok &= Object.values(row).some(v=>String(v).toLowerCase().includes(currentKeyword));
-    return ok;
+    let matchDate=true;
+    if(startDate && row["TanggalObj"]) matchDate = matchDate && row["TanggalObj"]>=startDate;
+    if(endDate && row["TanggalObj"]) matchDate = matchDate && row["TanggalObj"]<=endDate;
+    let matchText=currentKeyword?Object.values(row).some(val=>String(val).toLowerCase().includes(currentKeyword)):true;
+    return matchDate && matchText;
   });
 }
 
@@ -162,45 +185,96 @@ function renderTable(){
   const tbody=document.getElementById("table-body");
   const thead=document.getElementById("table-head");
   tbody.innerHTML=""; thead.innerHTML="";
-  const cols=sheetsConfig[currentSheet].columns;
+  const columns=sheetsConfig[currentSheet].columns;
 
-  const trH=document.createElement("tr");
-  cols.forEach(col=>{
-    const th=document.createElement("th");
-    th.textContent = currentSheet==="harian" ? col.toUpperCase() : col;
-    trH.appendChild(th);
-  });
-  thead.appendChild(trH);
+  const trHead=document.createElement("tr");
+  columns.forEach(col=>{ const th=document.createElement("th"); th.textContent=col; trHead.appendChild(th); });
+  thead.appendChild(trHead);
 
   const start=(currentPage-1)*sheetsConfig[currentSheet].rowsPerPage;
   const end=start+sheetsConfig[currentSheet].rowsPerPage;
-  const dataShow=filteredData.slice(start,end);
+  const dataToShow=filteredData.slice(start,end);
 
-  if(dataShow.length===0){tbody.innerHTML=`<tr><td colspan="${cols.length}">Tidak ada data</td></tr>`;return;}
+  if(dataToShow.length===0){
+    tbody.innerHTML=`<tr><td colspan="${columns.length}">Tidak ada data</td></tr>`;
+    document.getElementById("pagination").innerHTML="";
+    document.getElementById("total-container").textContent="";
+    return;
+  }
 
-  dataShow.forEach(row=>{
+  dataToShow.forEach(row=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=cols.map(col=>{
+    tr.innerHTML=columns.map(col=>{
       let val=row[col]||"";
-      if(["JUMLAH","Hasil (Rp)","NOMINAL (Rp)","Nominal (Rp)"].includes(col))
-        val=`<span class='rupiah'>${val}</span>`;
+      if(col==="JUMLAH" || col==="Hasil (Rp)") val=`<span class="jumlah">${val}</span>`;
       if(col==="FOTO" && val) val=`<img src="${val}" alt="Foto">`;
-      return `<td>${val}</td>`;
+      return `<td>${highlightText(val,currentKeyword)}</td>`;
     }).join("");
     tbody.appendChild(tr);
   });
+
+  if(["harian","bulanan","pengeluaran"].includes(currentSheet)){
+    const sum = filteredData.reduce((acc,row)=>{
+      const val = Number(String(row["Hasil (Rp)"] || row["NOMINAL (Rp)"] || row["JUMLAH"]).replace(/[^0-9]/g,""));
+      return acc + (isNaN(val)?0:val);
+    },0);
+    document.getElementById("total-container").textContent = "Total: " + formatRupiah(sum);
+  } else {
+    document.getElementById("total-container").textContent = "";
+  }
+
+  renderPagination();
 }
-document.getElementById("searchBox").addEventListener("input",()=>{currentKeyword=document.getElementById("searchBox").value.toLowerCase();renderTable();});
-document.getElementById("startDate").addEventListener("change",renderTable);
-document.getElementById("endDate").addEventListener("change",renderTable);
+
+function renderPagination(){
+  const pagination=document.getElementById("pagination"); pagination.innerHTML="";
+  const totalPages=Math.ceil(filteredData.length/sheetsConfig[currentSheet].rowsPerPage);
+  if(totalPages<=1) return;
+  const prev=document.createElement("button"); prev.textContent="⬅️"; prev.disabled=currentPage===1; prev.onclick=()=>{currentPage--; renderTable();}; pagination.appendChild(prev);
+  for(let i=1;i<=totalPages;i++){
+    const b=document.createElement("button"); b.textContent=i; if(i===currentPage) b.classList.add("active");
+    b.onclick=()=>{currentPage=i; renderTable();};
+    pagination.appendChild(b);
+  }
+  const next=document.createElement("button"); next.textContent="➡️"; next.disabled=currentPage===totalPages; next.onclick=()=>{currentPage++; renderTable();}; pagination.appendChild(next);
+}
+
+document.getElementById("searchBox").addEventListener("input",()=>{currentKeyword=document.getElementById("searchBox").value.toLowerCase(); currentPage=1; renderTable();});
+document.getElementById("startDate").addEventListener("change",()=>{currentPage=1; renderTable();});
+document.getElementById("endDate").addEventListener("change",()=>{currentPage=1; renderTable();});
+
+function resetFilter(){
+  document.getElementById("searchBox").value=""; document.getElementById("startDate").value="";
+  document.getElementById("endDate").value=""; currentKeyword=""; filteredData=allData; currentPage=1; renderTable();
+}
+
 document.querySelectorAll("#menu button").forEach(btn=>{
   btn.addEventListener("click",()=>{
     document.querySelectorAll("#menu button").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active"); currentSheet=btn.dataset.sheet; fetchData();
+    btn.classList.add("active");
+    currentSheet=btn.dataset.sheet; currentPage=1; resetFilter(); fetchData();
   });
 });
+
+function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('l','pt','a4');
+  doc.setFontSize(12);
+  const title=document.querySelector("#menu button.active").textContent;
+  doc.text(title,40,20);
+  const columns=sheetsConfig[currentSheet].columns;
+  doc.autoTable({
+    head:[columns],
+    body:filteredData.map(row=>columns.map(c=>row[c]||"")),
+    startY:40,
+    theme:'grid',
+    styles:{fontSize:8, cellPadding:3, halign:'center'}
+  });
+  doc.save(`${title.replace(/\s/g,"_")}.pdf`);
+}
+
 fetchData();
-setInterval(fetchData,300000);
+setInterval(fetchData,1*60*1000);
 </script>
 </body>
 </html>
