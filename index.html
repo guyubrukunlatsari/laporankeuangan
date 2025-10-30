@@ -39,6 +39,17 @@ tr:hover{background:#222;}
 .highlight{background:#00ff44;color:#000;font-weight:700;border-radius:3px;padding:0 3px;}
 td.nominal-cell { color: var(--green) !important; font-weight:700; }
 
+/* Lebar khusus kolom HADIR, IZIN, ALPHA */
+th:nth-child(4), td:nth-child(4),
+th:nth-child(5), td:nth-child(5),
+th:nth-child(6), td:nth-child(6) {
+  min-width: 160px;  /* bisa disesuaikan */
+  max-width: 200px;
+  white-space: nowrap;   /* nama tetap satu baris */
+  text-align: left;      /* rata kiri agar lebih rapi */
+  padding-left:8px;
+}
+
 .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:8px;}
 .pagination button{padding:6px 8px; border-radius:6px; font-size:0.85rem; background:#222; color:#ddd; border:1px solid #333;}
 .pagination button.active{background:var(--green); color:#000; transform:scale(1.05);}
@@ -117,26 +128,24 @@ function parseDate(val){
   if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); }
   return formatDateObj(new Date(val));
 }
-function formatDateObj(d){ if(!d||isNaN(d)) return {text:"",raw:null}; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return {text:`${dd}-${mm}-${yy}`,raw:d}; }
-function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); if(isNaN(num)) return val; return "Rp. "+num.toLocaleString("id-ID")+",-"; }
+function formatDateObj(d){ if(!d||isNaN(d)) return { text:"", raw:null }; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return { text:`${dd}-${mm}-${yy}`, raw:d }; }
+function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); return isNaN(num)?val:"Rp. "+num.toLocaleString("id-ID")+",-"; }
 
-function showLoading(){
-  const cols = sheetsConfig[currentSheet].columns.length || 8;
-  document.getElementById("table-body").innerHTML = `<tr><td colspan="${cols}"><div class="loader"></div></td></tr>`;
-}
+function showLoading(){ const cols=sheetsConfig[currentSheet].columns.length||8; document.getElementById("table-body").innerHTML=`<tr><td colspan="${cols}"><div class="loader"></div></td></tr>`; }
 
 function fetchData(){
   showLoading();
-  currentKeyword = ""; document.getElementById("searchBox").value = "";
-  const cfg = sheetsConfig[currentSheet];
-  const url = `https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?sheet=${encodeURIComponent(cfg.sheetName)}&tq=${encodeURIComponent(cfg.query)}`;
-  document.getElementById("update-time").textContent = "⏳ Memperbarui data...";
+  currentKeyword=""; document.getElementById("searchBox").value="";
+  const cfg=sheetsConfig[currentSheet];
+  const url=`https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?sheet=${encodeURIComponent(cfg.sheetName)}&tq=${encodeURIComponent(cfg.query)}`;
   fetch(url).then(r=>r.text()).then(rep=>{
     try{
       const json=JSON.parse(rep.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
       const rows=json.table.rows.map(r=>r.c.map(c=>c?c.v:""));
-      allData = rows.map(r=>{
-        const t=parseDate(r[1]); let obj={}; cfg.columns.forEach((col,idx)=>obj[col.toUpperCase()]=r[idx]||"");
+      allData=rows.map(r=>{
+        const t=parseDate(r[1]);
+        let obj={};
+        cfg.columns.forEach((col,idx)=> obj[col.toUpperCase()]=r[idx]||"");
         if(obj["TANGGAL"]) obj["TANGGALOBJ"]=t.raw;
         if(obj["TANGGAL"]) obj["TANGGAL"]=t.text||obj["TANGGAL"];
         if(obj["JUMLAH"]) obj["JUMLAH"]=formatRupiah(obj["JUMLAH"]);
@@ -151,10 +160,12 @@ function fetchData(){
       const now=new Date();
       document.getElementById("update-time").textContent = "Diperbarui otomatis: "+now.toLocaleString("id-ID",{ weekday:"short", day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
     }catch(e){
-      document.getElementById("table-body").innerHTML = `<tr><td colspan="${cfg.columns.length}">❌ Gagal memuat data</td></tr>`; console.error(e);
+      document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">❌ Gagal memuat data</td></tr>`;
+      console.error(e);
     }
   }).catch(err=>{
-    document.getElementById("table-body").innerHTML = `<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`; console.error(err);
+    document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`;
+    console.error(err);
   });
 }
 
@@ -172,7 +183,7 @@ function getFilteredData(){
   return allData.filter(row=>{
     const tgl=row["TANGGALOBJ"] instanceof Date?row["TANGGALOBJ"]:null;
     let matchDate=true; if(start&&tgl) matchDate=tgl>=start; if(end&&tgl) matchDate=matchDate&&tgl<=end;
-    const matchText = keyword? Object.values(row).some(v=>String(v).toLowerCase().includes(keyword)):true;
+    const matchText=keyword?Object.values(row).some(v=>String(v).toLowerCase().includes(keyword)):true;
     return matchDate&&matchText;
   });
 }
@@ -188,7 +199,6 @@ function renderTable(){
   cfg.columns.forEach(c=>{ const th=document.createElement("th"); th.textContent=c; trh.appendChild(th); });
   thead.appendChild(trh);
 
-  // pagination slice
   const start=(currentPage-1)*cfg.rowsPerPage, end=start+cfg.rowsPerPage;
   const view=filteredData.slice(start,end);
 
@@ -211,7 +221,6 @@ function renderTable(){
     tbody.appendChild(tr);
   });
 
-  // total
   if(["harian","bulanan","pengeluaran"].includes(currentSheet)){
     const sum=filteredData.reduce((acc,row)=>{
       const rawVal=(row["HASIL (RP)"]||row["NOMINAL (RP)"]||row["JUMLAH"])||"";
