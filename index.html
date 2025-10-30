@@ -219,6 +219,23 @@ function renderTable(){
       }
 
       if(["HASIL (RP)","NOMINAL (RP)","JUMLAH"].includes(key)) cls="nominal-cell";
+      // 👥 Kolom HADIR / IZIN / ALPHA jadi daftar menurun dengan nomor urut
+if (["HADIR", "IZIN", "ALPHA"].includes(key)) {
+  if (val) {
+    val = val
+      // Lindungi gelar agar tidak ikut terpecah (S.Kom, ST, SE, SH, MT)
+      .replace(/(\bS\.Kom|\bST|\bSE|\bSH|\bMT)/gi, (m)=>m.replace('.', '§'))
+      // Pisahkan berdasarkan baris, koma, atau titik koma
+      .split(/[\n,;]+/)
+      .map(v => v.trim())
+      .filter(v => v)
+      // Beri nomor dan kembalikan gelar ke format aslinya
+      .map((v, i) => `${i + 1}. ${v.replace(/§/g, '.')}`)
+      .join("<br>");
+  } else {
+    val = "-";
+  }
+}
       if(key==="FOTO"&&val) val=`<img src="${val}" alt="Foto">`;
       else val=highlightText(String(val),currentKeyword);
       return `<td class="${cls}">${val}</td>`;
