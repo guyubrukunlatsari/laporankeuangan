@@ -13,24 +13,86 @@
   --panel:#1a1a1a;
   --accent:#00cc66;
 }
-body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: #f1f1f1; margin:0; padding:12px;}
-h1 { text-align:center; color:var(--green); margin-bottom:10px; font-size:1.2rem;}
-#menu { display:flex; justify-content:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
-#menu button { padding:6px 12px; border:none; border-radius:6px; font-weight:600; cursor:pointer; transition:0.15s; background:var(--accent); color:#000;}
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg);
+  color: #f1f1f1;
+  margin:0;
+  padding:12px;
+}
+h1 {
+  text-align:center;
+  color:var(--green);
+  margin-bottom:10px;
+  font-size:1.2rem;
+}
+#menu {
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:10px;
+  flex-wrap:wrap;
+}
+#menu button {
+  padding:6px 12px;
+  border:none;
+  border-radius:6px;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.15s;
+  background:var(--accent);
+  color:#000;
+}
 #menu button.active, #menu button:hover { background:var(--green); }
 
-.filter-container { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:10px; align-items:center; }
-.filter-container label { color:#ddd; font-size:0.85rem; display:flex; gap:6px; align-items:center; }
+.filter-container {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin-bottom:10px;
+  align-items:center;
+}
+.filter-container label {
+  color:#ddd;
+  font-size:0.85rem;
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
 .filter-container input[type="date"], .filter-container input[type="text"], .filter-container button {
-  padding:6px 8px; border-radius:6px; border:1px solid #333; background:var(--panel); color:#fff; font-size:0.9rem;
+  padding:6px 8px;
+  border-radius:6px;
+  border:1px solid #333;
+  background:var(--panel);
+  color:#fff;
+  font-size:0.9rem;
 }
 .filter-container input[type="text"]{ min-width:200px; }
 .filter-container button { background:var(--accent); color:#000; font-weight:600; cursor:pointer; }
 .filter-container button:hover{ background:var(--green); }
 
-.table-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:10px; border-radius:6px; }
-table { width:100%; border-collapse:collapse; min-width:360px; table-layout: fixed; }
-th, td { padding:8px; font-size:0.85rem; border-bottom:1px solid #333; text-align:center; vertical-align:middle; }
+/* ===== TABEL ===== */
+.table-wrapper {
+  overflow-x:auto;              /* scroll horizontal jika layar kecil */
+  -webkit-overflow-scrolling: touch;
+  margin-bottom:10px;
+  border-radius:6px;
+  width: 100%;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  min-width:700px;             /* tetap lebar agar kolom tidak pecah */
+  table-layout:auto;
+}
+th, td {
+  padding:8px;
+  font-size:0.85rem;
+  border-bottom:1px solid #333;
+  text-align:center;
+  vertical-align:middle;
+}
 th { background-color:var(--accent); color:#000; font-weight:700; }
 td.foto img { max-width:60px; max-height:50px; border-radius:4px; display:block; margin:auto; }
 tr:nth-child(even){background:#171717;}
@@ -39,43 +101,14 @@ tr:hover{background:#222;}
 .highlight{background:#00ff44;color:#000;font-weight:700;border-radius:3px;padding:0 3px;}
 td.nominal-cell { color: var(--green) !important; font-weight:700; }
 
-/* Kolom NO kecil */
-th:nth-child(1), td:nth-child(1) {
-  width:2%;
-  min-width:40px;
-  max-width:60px;
-  text-align:center;
-  white-space:nowrap;
-}
-
-/* Kolom HADIR, IZIN, ALPHA sama lebar */
+/* Kolom spesifik */
+th:nth-child(1), td:nth-child(1) { width:2%; min-width:40px; max-width:60px; }
+th:nth-child(2), td:nth-child(2),
+th:nth-child(3), td:nth-child(3) { width:8%; min-width:80px; max-width:100px; }
 th:nth-child(4), td:nth-child(4),
 th:nth-child(5), td:nth-child(5),
-th:nth-child(6), td:nth-child(6) {
-  width: 14%;
-  min-width:140px;
-  white-space: normal; 
-  text-align: center;
-  vertical-align: middle;
-  word-break: break-word;
-}
-/* Kolom TANGGAL & HARI JAGA lebih kecil */
-th:nth-child(2), td:nth-child(2),
-th:nth-child(3), td:nth-child(3) {
-  width:8%;
-  min-width:80px;
-  max-width:100px;
-  text-align:center;
-  white-space:nowrap;
-}
-/* Kolom HASIL (Rp) lebih kecil */
-th:nth-child(7), td:nth-child(7) {
-  width:7%;
-  min-width:80px;
-  max-width:100px;
-  text-align:center;
-  white-space:nowrap;
-}
+th:nth-child(6), td:nth-child(6) { width:14%; min-width:140px; word-break: break-word; }
+th:nth-child(7), td:nth-child(7) { width:7%; min-width:80px; max-width:100px; }
 
 .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:8px;}
 .pagination button{padding:6px 8px; border-radius:6px; font-size:0.85rem; background:#222; color:#ddd; border:1px solid #333;}
@@ -89,21 +122,14 @@ footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
 .loader { border: 3px solid #333; border-top: 3px solid var(--green); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin:auto; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* MEDIA QUERIES */
+/* ===== MEDIA QUERIES ===== */
 @media(max-width:600px){
   .filter-container input[type="text"]{ min-width:120px; }
-  th, td { padding:6px; font-size:0.85rem; }
+  th, td { padding:6px 4px; font-size:0.75rem; }
 }
 @media(max-width:400px){
   h1 { font-size:1rem; }
-  #menu button { font-size:0.8rem; padding:4px 8px; }
-}
-
-/* Khusus ReKap agar menyesuaikan layar HP */
-@media(max-width:600px){
-  table#main-table { min-width:auto; width:100%; }
-  table#main-table th, table#main-table td { font-size:0.85rem; padding:6px 6px; text-align:left; }
-  td.nominal-cell { text-align:right; }
+  #menu button { font-size:0.75rem; padding:3px 6px; }
 }
 </style>
 </head>
@@ -140,25 +166,22 @@ footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 <script>
-/* ==== CONFIG ==== */
+// ==== CONFIG & UTILS ====
 const sheetsConfig = {
   harian:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Jimpitan Harian", columns:["NO","TANGGAL","HARI JAGA","HADIR","IZIN","ALPHA","HASIL (Rp)","KETERANGAN"], query:"SELECT A,B,C,E,F,G,H,I", rowsPerPage:10 },
   bulanan:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Warga Bulanan", columns:["NO","TANGGAL","NAMA WARGA","PERIODE BAYAR","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F,G", rowsPerPage:10 },
   pengeluaran:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Pengeluaran", columns:["NO","TANGGAL","KEPERLUAN","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F", rowsPerPage:10 },
   rekap:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Rekap Keuangan RT", columns:["DESKRIPSI","JUMLAH"], query:"SELECT A,B", rowsPerPage:1000 }
 };
-
 let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKeyword="";
-
-/* ==== UTIL ==== */
-function parseDate(val){ if(!val) return { text:"", raw:null }; if(typeof val==="string" && val.startsWith("Date(")){ const m=val.match(/Date\((\d+),(\d+),(\d+)/); if(m){ const d=new Date(Number(m[1]),Number(m[2]),Number(m[3])); return formatDateObj(d); } } if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ return formatDateObj(new Date(val)); } if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); } return formatDateObj(new Date(val)); }
-function formatDateObj(d){ if(!d||isNaN(d)) return { text:"", raw:null }; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return { text:`${dd}-${mm}-${yy}`, raw:d }; }
+function parseDate(val){ if(!val) return {text:"", raw:null}; if(typeof val==="string" && val.startsWith("Date(")){ const m=val.match(/Date\((\d+),(\d+),(\d+)/); if(m){ const d=new Date(Number(m[1]),Number(m[2]),Number(m[3])); return formatDateObj(d); } } if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ return formatDateObj(new Date(val)); } if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); } return formatDateObj(new Date(val)); }
+function formatDateObj(d){ if(!d||isNaN(d)) return {text:"", raw:null}; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return {text:`${dd}-${mm}-${yy}`, raw:d}; }
 function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); return isNaN(num)?val:"Rp. "+num.toLocaleString("id-ID")+",-"; }
 
-/* ==== FETCH DATA ==== */
+// ==== FETCH DATA ====
 function showLoading(){ const cols=sheetsConfig[currentSheet].columns.length||8; document.getElementById("table-body").innerHTML=`<tr><td colspan="${cols}"><div class="loader"></div></td></tr>`; }
-
 function fetchData(){
   showLoading(); currentKeyword=""; document.getElementById("searchBox").value="";
   const cfg=sheetsConfig[currentSheet];
@@ -190,9 +213,7 @@ function fetchData(){
     document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`; console.error(err);
   });
 }
-
 function toggleDateInputs(disable){ const s=document.getElementById("startDate"), e=document.getElementById("endDate"); if(disable){ s.value=""; e.value=""; s.disabled=true; e.disabled=true; s.style.opacity=0.6; e.style.opacity=0.6; } else{ s.disabled=false; e.disabled=false; s.style.opacity=1; e.style.opacity=1; } }
-
 function getFilteredData(){
   const sDate=document.getElementById("startDate").value;
   const eDate=document.getElementById("endDate").value;
@@ -216,24 +237,14 @@ function renderTable(){
   const tbody=document.getElementById("table-body");
   tbody.innerHTML=""; thead.innerHTML="";
   const trh=document.createElement("tr");
-  cfg.columns.forEach(c=>{ 
-    const th=document.createElement("th"); 
-    th.textContent=c; 
-    if(currentSheet==="rekap" && window.innerWidth <=600) th.style.fontSize="0.85rem";
-    trh.appendChild(th); 
-  });
+  cfg.columns.forEach(c=>{ const th=document.createElement("th"); th.textContent=c; trh.appendChild(th); });
   thead.appendChild(trh);
 
   const start=(currentPage-1)*cfg.rowsPerPage;
   const end=start+cfg.rowsPerPage;
   const view=filteredData.slice(start,end);
 
-  if(view.length===0){ 
-    tbody.innerHTML=`<tr><td colspan="${cfg.columns.length}">Tidak ada data</td></tr>`; 
-    document.getElementById("pagination").innerHTML=""; 
-    document.getElementById("total-container").textContent=""; 
-    return; 
-  }
+  if(view.length===0){ tbody.innerHTML=`<tr><td colspan="${cfg.columns.length}">Tidak ada data</td></tr>`; document.getElementById("pagination").innerHTML=""; document.getElementById("total-container").textContent=""; return; }
 
   view.forEach(row=>{
     const tr=document.createElement("tr");
@@ -244,7 +255,6 @@ function renderTable(){
       if(["HASIL (RP)","NOMINAL (RP)","JUMLAH"].includes(key)) cls="nominal-cell";
       if(["HADIR","IZIN","ALPHA"].includes(key)&&val) val=val.split("\n").map(l=>l.trim()).filter(Boolean).join("<br>");
       if(key==="FOTO"&&val) val=`<img src="${val}" alt="Foto">`; else val=highlightText(String(val),currentKeyword);
-      if(currentSheet==="rekap" && window.innerWidth <=600) val=String(val);
       return `<td class="${cls}">${val}</td>`;
     }).join("");
     tbody.appendChild(tr);
