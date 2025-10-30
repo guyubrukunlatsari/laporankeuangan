@@ -59,7 +59,15 @@ th:nth-child(6), td:nth-child(6) {
   vertical-align: middle;
   word-break: break-word;
 }
-
+/* Kolom TANGGAL & HARI JAGA lebih kecil */
+th:nth-child(2), td:nth-child(2),
+th:nth-child(3), td:nth-child(3) {
+  width:10%;
+  min-width:80px;
+  max-width:100px;
+  text-align:center;
+  white-space:nowrap;
+}
 .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:8px;}
 .pagination button{padding:6px 8px; border-radius:6px; font-size:0.85rem; background:#222; color:#ddd; border:1px solid #333;}
 .pagination button.active{background:var(--green); color:#000; transform:scale(1.05);}
