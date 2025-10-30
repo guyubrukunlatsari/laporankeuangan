@@ -21,7 +21,7 @@
   table { width:100%; border-collapse:collapse; min-width:300px; }
   th, td { padding:5px; text-align:center; font-size:0.8rem; border-bottom:1px solid #333; }
   th { background-color:#00cc66; color:#000; }
-  td.nominal, td.jumlah { color:#00ff99; font-weight:bold; }
+  td.nominal, td.jumlah { color:#00ff88; font-weight:bold; }
   td.foto img { max-width:60px; max-height:50px; border-radius:3px; display:block; margin:auto; }
   tr:nth-child(even){background:#1e1e1e;}
   tr:hover{background:#2a2a2a;}
@@ -78,7 +78,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script>
 const sheetsConfig = {
-  harian:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Jimpitan Harian", columns:["No","Tanggal","Hari Jaga","Hadir","Izin","Alpha","Hasil (Rp)","Keterangan"], query:"SELECT A,B,C,E,F,G,H,I", rowsPerPage:10 },
+  harian:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Jimpitan Harian", columns:["No","TANGGAL","HARI JAGA","HADIR","IZIN","ALPHA","HASIL (Rp)","KETERANGAN"], query:"SELECT A,B,C,E,F,G,H,I", rowsPerPage:10 },
   bulanan:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Warga Bulanan", columns:["NO","TANGGAL","NAMA WARGA","PERIODE BAYAR","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F,G", rowsPerPage:10 },
   pengeluaran:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Pengeluaran", columns:["NO","TANGGAL","KEPERLUAN","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F", rowsPerPage:10 },
   rekap:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Rekap Keuangan RT", columns:["DESKRIPSI","JUMLAH"], query:"SELECT A,B", rowsPerPage:1000 }
@@ -131,11 +131,11 @@ function fetchData(){
         config.columns.forEach((col,j)=>{
           obj[col]=r[j]||"";
         });
-        if(obj["Tanggal"]||obj["TANGGAL"]) obj["TanggalObj"]=t.raw;
-        if(obj["Tanggal"]) obj["Tanggal"]=t.text;
+        if(obj["TANGGAL"]||obj["TANGGAL"]) obj["TanggalObj"]=t.raw;
+        if(obj["TANGGAL"]) obj["TANGGAL"]=t.text;
         if(obj["TANGGAL"]) obj["TANGGAL"]=t.text;
         if(obj["JUMLAH"]) obj["JUMLAH"]=formatRupiah(obj["JUMLAH"]);
-        if(obj["Hasil (Rp)"]) obj["Hasil (Rp)"]=formatRupiah(obj["Hasil (Rp)"]);
+        if(obj["HASIL (Rp)"]) obj["HASIL (Rp)"]=formatRupiah(obj["HASIL (Rp)"]);
         return obj;
       });
 
@@ -206,7 +206,7 @@ function renderTable(){
     const tr=document.createElement("tr");
     tr.innerHTML=columns.map(col=>{
       let val=row[col]||"";
-      if(col==="JUMLAH" || col==="Hasil (Rp)") val=`<span class="jumlah">${val}</span>`;
+      if(col==="JUMLAH" || col==="HASIL (Rp)") val=`<span class="JUMLAH">${val}</span>`;
       if(col==="FOTO" && val) val=`<img src="${val}" alt="Foto">`;
       return `<td>${highlightText(val,currentKeyword)}</td>`;
     }).join("");
@@ -215,7 +215,7 @@ function renderTable(){
 
   if(["harian","bulanan","pengeluaran"].includes(currentSheet)){
     const sum = filteredData.reduce((acc,row)=>{
-      const val = Number(String(row["Hasil (Rp)"] || row["NOMINAL (Rp)"] || row["JUMLAH"]).replace(/[^0-9]/g,""));
+      const val = Number(String(row["HASIL (Rp)"] || row["NOMINAL (Rp)"] || row["JUMLAH"]).replace(/[^0-9]/g,""));
       return acc + (isNaN(val)?0:val);
     },0);
     document.getElementById("total-container").textContent = "Total: " + formatRupiah(sum);
@@ -274,7 +274,7 @@ function exportPDF(){
 }
 
 fetchData();
-setInterval(fetchData,5*60*1000);
+setInterval(fetchData,1*60*1000);
 </script>
 </body>
 </html>
