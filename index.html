@@ -94,15 +94,14 @@ let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKe
 function parseDate(val) {
   if (!val) return { text: "", raw: null };
   let d;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-    d = new Date(val);
-  } else if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) d = new Date(val);
+  else if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)) {
     const [day, month, year] = val.split(/[-/]/);
     d = new Date(`${year}-${month}-${day}`);
-  } else {
-    d = new Date(val);
-  }
+  } else d = new Date(val);
   if (isNaN(d)) return { text: val, raw: null };
+
+  // Format tanggal DD-MM-YYYY
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
@@ -115,6 +114,7 @@ function showLoading(){
 
 function fetchData(){
   showLoading();
+  currentKeyword="";
   const config = sheetsConfig[currentSheet];
   const url=`https://docs.google.com/spreadsheets/d/${config.sheetId}/gviz/tq?sheet=${config.sheetName}&tq=${encodeURIComponent(config.query)}`;
   fetch(url)
@@ -127,17 +127,26 @@ function fetchData(){
         const t=parseDate(r[1]);
         let obj={};
         config.columns.forEach((col,j)=>obj[col.toUpperCase()]=r[j]||"");
-        if(obj["TANGGAL"]) obj["TanggalObj"]=t.raw;
-        if(obj["TANGGAL"]) obj["TANGGAL"]=t.text;
+        if(obj["TANGGAL"]) obj["TANGGALOBJ"]=t.raw;
+        obj["TANGGAL"]=t.text || obj["TANGGAL"];
         if(obj["JUMLAH"]) obj["JUMLAH"]=formatRupiah(obj["JUMLAH"]);
         if(obj["HASIL (RP)"]) obj["HASIL (RP)"]=formatRupiah(obj["HASIL (RP)"]);
         if(obj["NOMINAL (RP)"]) obj["NOMINAL (RP)"]=formatRupiah(obj["NOMINAL (RP)"]);
         return obj;
       });
+
+      // 🔥 Urutkan berdasarkan tanggal terbaru di atas
+      allData.sort((a,b)=>{
+        const da=a["TANGGALOBJ"], db=b["TANGGALOBJ"];
+        if(!da || !db) return 0;
+        return db - da; // descending
+      });
+
       filteredData=allData;
       renderTable();
       const now=new Date();
-      document.getElementById("update-time").textContent="Diperbarui otomatis: "+now.toLocaleString("id-ID",{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+      const upd = now.toLocaleString("id-ID",{ weekday:"short", day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
+      document.getElementById("update-time").textContent="Diperbarui otomatis: "+upd;
     }catch(err){
       document.getElementById("table-body").innerHTML=`<tr><td colspan="${config.columns.length}">❌ Gagal memuat data</td></tr>`;
     }
@@ -163,7 +172,7 @@ function getFilteredData() {
   const end = eDate ? new Date(eDate + "T23:59:59") : null;
 
   return allData.filter(row => {
-    const tgl = row["TanggalObj"] instanceof Date ? row["TanggalObj"] : null;
+    const tgl = row["TANGGALOBJ"] instanceof Date ? row["TANGGALOBJ"] : null;
     let matchDate = true;
     if (start && tgl) matchDate = tgl >= start;
     if (end && tgl) matchDate = matchDate && tgl <= end;
@@ -196,11 +205,11 @@ function renderTable(){
   viewData.forEach(row=>{
     const tr=document.createElement("tr");
     tr.innerHTML=columns.map(col=>{
-      const colKey=col.toUpperCase();
-      let val=row[colKey]||"";
+      const key=col.toUpperCase();
+      let val=row[key]||"";
       let cls="";
-      if(["HASIL (RP)","NOMINAL (RP)","JUMLAH"].includes(colKey)) cls="nominal-cell";
-      if(colKey==="FOTO"&&val) val=`<img src="${val}" alt="Foto">`;
+      if(["HASIL (RP)","NOMINAL (RP)","JUMLAH"].includes(key)) cls="nominal-cell";
+      if(key==="FOTO"&&val) val=`<img src="${val}" alt="Foto">`;
       else val=highlightText(String(val),currentKeyword);
       return `<td class="${cls}">${val}</td>`;
     }).join("");
