@@ -76,6 +76,14 @@ th:nth-child(7), td:nth-child(7) {
   text-align:center;
   white-space:nowrap;
 }
+/* Khusus sheet Rekap Keuangan */
+#main-table.rekap th, #main-table.rekap td {
+  width: 50%;
+  min-width: 100px;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+}
 .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:8px;}
 .pagination button{padding:6px 8px; border-radius:6px; font-size:0.85rem; background:#222; color:#ddd; border:1px solid #333;}
 .pagination button.active{background:var(--green); color:#000; transform:scale(1.05);}
@@ -143,13 +151,21 @@ const sheetsConfig = {
 
 let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKeyword="";
 
-/* ==== UTIL ==== */
-function parseDate(val){ if(!val) return { text:"", raw:null }; if(typeof val==="string" && val.startsWith("Date(")){ const m=val.match(/Date\((\d+),(\d+),(\d+)/); if(m){ const d=new Date(Number(m[1]),Number(m[2]),Number(m[3])); return formatDateObj(d); } } if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ return formatDateObj(new Date(val)); } if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); } return formatDateObj(new Date(val)); }
+/* ==== UTIL: parse tanggal ==== */
+function parseDate(val){
+  if(!val) return { text:"", raw:null };
+  if(typeof val==="string" && val.startsWith("Date(")){
+    const m=val.match(/Date\((\d+),(\d+),(\d+)/);
+    if(m){ const d=new Date(Number(m[1]), Number(m[2]), Number(m[3])); return formatDateObj(d); }
+  }
+  if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ const d=new Date(val); return formatDateObj(d);}
+  if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); const d=new Date(`${yy}-${mm}-${dd}`); return formatDateObj(d);}
+  const d=new Date(val); return formatDateObj(d);
+}
 function formatDateObj(d){ if(!d||isNaN(d)) return { text:"", raw:null }; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return { text:`${dd}-${mm}-${yy}`, raw:d }; }
-function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); return isNaN(num)?val:"Rp. "+num.toLocaleString("id-ID")+",-"; }
+function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); if(isNaN(num)) return val; return "Rp. "+num.toLocaleString("id-ID")+",-"; }
 
-/* ==== FETCH DATA ==== */
-function showLoading(){ const cols=sheetsConfig[currentSheet].columns.length||8; document.getElementById("table-body").innerHTML=`<tr><td colspan="${cols}"><div class="loader"></div></td></tr>`; }
+function showLoading(){ const cols=sheetsConfig[currentSheet].columns.length || 8; document.getElementById("table-body").innerHTML=`<tr><td colspan="${cols}"><div class="loader"></div></td></tr>`; }
 
 function fetchData(){
   showLoading(); currentKeyword=""; document.getElementById("searchBox").value="";
@@ -158,12 +174,12 @@ function fetchData(){
   fetch(url).then(r=>r.text()).then(rep=>{
     try{
       const json=JSON.parse(rep.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
-      const rows=json.table.rows.map(r=>r.c.map(c=>c?v=c.v:""));
+      const rows=json.table.rows.map(r=>r.c.map(c=>c? c.v :""));
       allData=rows.map(r=>{
-        const t=parseDate(r[1]); let obj={};
+        const t=parseDate(r[1]);
+        let obj={};
         cfg.columns.forEach((col,idx)=> obj[col.toUpperCase()]=r[idx]||"");
-        if(obj["TANGGAL"]) obj["TANGGALOBJ"]=t.raw;
-        if(obj["TANGGAL"]) obj["TANGGAL"]=t.text||obj["TANGGAL"];
+        if(obj["TANGGAL"]) obj["TANGGALOBJ"]=t.raw; if(obj["TANGGAL"]) obj["TANGGAL"]=t.text||obj["TANGGAL"];
         if(obj["JUMLAH"]) obj["JUMLAH"]=formatRupiah(obj["JUMLAH"]);
         if(obj["HASIL (RP)"]) obj["HASIL (RP)"]=formatRupiah(obj["HASIL (RP)"]);
         if(obj["NOMINAL (RP)"]) obj["NOMINAL (RP)"]=formatRupiah(obj["NOMINAL (RP)"]);
@@ -175,21 +191,17 @@ function fetchData(){
       renderTable();
       const now=new Date();
       document.getElementById("update-time").textContent="Diperbarui otomatis: "+now.toLocaleString("id-ID",{ weekday:"short", day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
-    }catch(e){
-      document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">❌ Gagal memuat data</td></tr>`; console.error(e);
-    }
-  }).catch(err=>{
-    document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`; console.error(err);
-  });
+    }catch(e){ document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">❌ Gagal memuat data</td></tr>`; console.error(e);}
+  }).catch(err){ document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`; console.error(err);}
 }
 
 function toggleDateInputs(disable){ const s=document.getElementById("startDate"), e=document.getElementById("endDate"); if(disable){ s.value=""; e.value=""; s.disabled=true; e.disabled=true; s.style.opacity=0.6; e.style.opacity=0.6; } else{ s.disabled=false; e.disabled=false; s.style.opacity=1; e.style.opacity=1; } }
 
-function getFilteredData(){
-  const sDate=document.getElementById("startDate").value;
-  const eDate=document.getElementById("endDate").value;
-  const start=sDate?new Date(sDate+"T00:00:00"):null;
-  const end=eDate?new Date(eDate+"T23:59:59"):null;
+function getFilteredData(){ 
+  const sDate=document.getElementById("startDate").value; 
+  const eDate=document.getElementById("endDate").value; 
+  const start=sDate?new Date(sDate+"T00:00:00"):null; 
+  const end=eDate?new Date(eDate+"T23:59:59"):null; 
   const keyword=currentKeyword.trim().toLowerCase();
   return allData.filter(row=>{
     const tgl=row["TANGGALOBJ"] instanceof Date?row["TANGGALOBJ"]:null;
@@ -207,9 +219,15 @@ function renderTable(){
   const thead=document.getElementById("table-head");
   const tbody=document.getElementById("table-body");
   tbody.innerHTML=""; thead.innerHTML="";
+
+  // header
   const trh=document.createElement("tr");
   cfg.columns.forEach(c=>{ const th=document.createElement("th"); th.textContent=c; trh.appendChild(th); });
   thead.appendChild(trh);
+
+  // tambah class rekap jika sheet rekap
+  const table=document.getElementById("main-table");
+  if(currentSheet==="rekap") table.classList.add("rekap"); else table.classList.remove("rekap");
 
   const start=(currentPage-1)*cfg.rowsPerPage;
   const end=start+cfg.rowsPerPage;
@@ -231,6 +249,7 @@ function renderTable(){
     tbody.appendChild(tr);
   });
 
+  // total
   if(["harian","bulanan","pengeluaran"].includes(currentSheet)){
     const sum=filteredData.reduce((acc,row)=>{ const rawVal=(row["HASIL (RP)"]||row["NOMINAL (RP)"]||row["JUMLAH"])||""; const num=Number(String(rawVal).replace(/[^0-9]/g,"")); return acc+(isNaN(num)?0:num); },0);
     document.getElementById("total-container").textContent="Total: "+formatRupiah(sum);
@@ -261,7 +280,7 @@ function exportPDF(){
   doc.save(`${title.replace(/\s/g,"_")}.pdf`);
 }
 
-/* ==== UI handlers ==== */
+/* UI handlers */
 document.getElementById("searchBox").addEventListener("input", e=>{ currentKeyword=e.target.value.toLowerCase(); currentPage=1; renderTable(); });
 document.getElementById("startDate").addEventListener("change", ()=>{ currentPage=1; renderTable(); });
 document.getElementById("endDate").addEventListener("change", ()=>{ currentPage=1; renderTable(); });
@@ -284,8 +303,9 @@ document.querySelectorAll("#menu button").forEach(btn=>{
   });
 });
 
-/* initial load & auto refresh */
-fetchData(); setInterval(fetchData,60000);
+/* initial load */
+fetchData();
+setInterval(()=>{ fetchData(); },60000);
 </script>
 </body>
 </html>
