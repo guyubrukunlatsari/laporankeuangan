@@ -6,48 +6,67 @@
 <title>DASHBOARD KEUANGAN RT 04 RW 01 LATSARI</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root{--green:#00ff88;--muted:#aaa;--bg:#0f0f0f;--panel:#1a1a1a;--accent:#00cc66}
-  body { font-family: 'Poppins', sans-serif; background-color: var(--bg); color: #f1f1f1; margin:0; padding:12px;}
-  h1 { text-align:center; color:var(--green); margin-bottom:10px; font-size:1.2rem;}
-  #menu { display:flex; justify-content:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
-  #menu button { padding:6px 12px; border:none; border-radius:6px; font-weight:600; cursor:pointer; transition:0.15s; background:var(--accent); color:#000;}
-  #menu button.active, #menu button:hover { background:var(--green); }
+:root{
+  --green:#00ff88;
+  --muted:#aaa;
+  --bg:#0f0f0f;
+  --panel:#1a1a1a;
+  --accent:#00cc66;
+}
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg);
+  color: #f1f1f1;
+  margin:0; padding:12px;
+}
+h1 {
+  text-align:center; color:var(--green);
+  margin-bottom:10px; font-size:1.2rem;
+}
+#menu { display:flex; justify-content:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
+#menu button { padding:6px 12px; border:none; border-radius:6px; font-weight:600; cursor:pointer; transition:0.15s; background:var(--accent); color:#000;}
+#menu button.active, #menu button:hover { background:var(--green); }
 
-  .filter-container { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:10px; align-items:center; }
-  .filter-container label { color:#ddd; font-size:0.85rem; display:flex; gap:6px; align-items:center; }
-  .filter-container input[type="date"], .filter-container input[type="text"], .filter-container button {
-    padding:6px 8px; border-radius:6px; border:1px solid #333; background:var(--panel); color:#fff; font-size:0.9rem;
-  }
-  .filter-container input[type="text"]{ min-width:200px; }
-  .filter-container button { background:var(--accent); color:#000; font-weight:600; cursor:pointer; }
-  .filter-container button:hover{ background:var(--green); }
+.filter-container { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:10px; align-items:center; }
+.filter-container label { color:#ddd; font-size:0.85rem; display:flex; gap:6px; align-items:center; }
+.filter-container input[type="date"], .filter-container input[type="text"], .filter-container button {
+  padding:6px 8px; border-radius:6px; border:1px solid #333; background:var(--panel); color:#fff; font-size:0.9rem;
+}
+.filter-container input[type="text"]{ min-width:200px; }
+.filter-container button { background:var(--accent); color:#000; font-weight:600; cursor:pointer; }
+.filter-container button:hover{ background:var(--green); }
 
-  .table-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:10px; border-radius:6px; }
-  table { width:100%; border-collapse:collapse; min-width:360px; }
-  th, td { padding:8px; text-align:center; font-size:0.85rem; border-bottom:1px solid #333; }
-  th { background-color:var(--accent); color:#000; font-weight:700; }
-  td.foto img { max-width:60px; max-height:50px; border-radius:4px; display:block; margin:auto; }
-  tr:nth-child(even){background:#171717;}
-  tr:hover{background:#222;}
+.table-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:10px; border-radius:6px; }
+table { width:100%; border-collapse:collapse; min-width:360px; }
+th, td { padding:8px; text-align:center; font-size:0.85rem; border-bottom:1px solid #333; }
+th { background-color:var(--accent); color:#000; font-weight:700; }
+td.foto img { max-width:60px; max-height:50px; border-radius:4px; display:block; margin:auto; }
+tr:nth-child(even){background:#171717;}
+tr:hover{background:#222;}
 
-  .highlight{background:#00ff44;color:#000;font-weight:700;border-radius:3px;padding:0 3px;}
+.highlight{background:#00ff44;color:#000;font-weight:700;border-radius:3px;padding:0 3px;}
+td.nominal-cell { color: var(--green) !important; font-weight:700; }
 
-  /* warna hijau untuk nominal */
-  td.nominal-cell { color: var(--green) !important; font-weight:700; }
+.pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:8px;}
+.pagination button{padding:6px 8px; border-radius:6px; font-size:0.85rem; background:#222; color:#ddd; border:1px solid #333;}
+.pagination button.active{background:var(--green); color:#000; transform:scale(1.05);}
+.pagination button:disabled{background:#333;color:#777; cursor:not-allowed;}
 
-  .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:8px;}
-  .pagination button{padding:6px 8px; border-radius:6px; font-size:0.85rem; background:#222; color:#ddd; border:1px solid #333;}
-  .pagination button.active{background:var(--green); color:#000; transform:scale(1.05);}
-  .pagination button:disabled{background:#333;color:#777; cursor:not-allowed;}
+#update-time {text-align:center; color:var(--muted); font-size:0.78rem; margin-bottom:6px;}
+#total-container { text-align:center; margin-top:6px; font-weight:700; color:var(--green); }
+footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
 
-  #update-time {text-align:center; color:var(--muted); font-size:0.78rem; margin-bottom:6px;}
-  #total-container { text-align:center; margin-top:6px; font-weight:700; color:var(--green); }
-  footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
+.loader { border: 3px solid #333; border-top: 3px solid var(--green); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin:auto; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
-  @media(max-width:600px){
-    .filter-container input[type="text"]{ min-width:120px; }
-    th, td { padding:6px; font-size:0.78rem; }
-  }
+@media(max-width:600px){
+  .filter-container input[type="text"]{ min-width:120px; }
+  th, td { padding:6px; font-size:0.78rem; }
+}
+@media(max-width:400px){
+  h1 { font-size:1rem; }
+  #menu button { font-size:0.8rem; padding:4px 8px; }
+}
 </style>
 </head>
 <body>
@@ -73,7 +92,7 @@
 <div class="table-wrapper">
   <table id="main-table" role="table" aria-label="Data keuangan">
     <thead id="table-head"></thead>
-    <tbody id="table-body"><tr><td colspan="8">⏳ Memuat data...</td></tr></tbody>
+    <tbody id="table-body"><tr><td colspan="8"><div class="loader"></div></td></tr></tbody>
   </table>
 </div>
 
@@ -81,12 +100,11 @@
 <div class="pagination" id="pagination"></div>
 <footer>Data otomatis diperbarui dari Google Sheet</footer>
 
-<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <script>
-/* ==== CONFIG ==== */
+// ==== CONFIG ====
 const sheetsConfig = {
   harian:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Jimpitan Harian", columns:["NO","TANGGAL","HARI JAGA","HADIR","IZIN","ALPHA","HASIL (Rp)","KETERANGAN"], query:"SELECT A,B,C,E,F,G,H,I", rowsPerPage:10 },
   bulanan:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Warga Bulanan", columns:["NO","TANGGAL","NAMA WARGA","PERIODE BAYAR","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F,G", rowsPerPage:10 },
@@ -96,296 +114,178 @@ const sheetsConfig = {
 
 let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKeyword="";
 
-/* ==== UTIL: parse tanggal -> tampil DD-MM-YYYY dan raw Date ==== */
+// ==== UTIL ====
 function parseDate(val){
   if(!val) return { text:"", raw:null };
-  // handle google date object string like Date(2025,9,30) if appears
   if(typeof val === "string" && val.startsWith("Date(")){
     const m = val.match(/Date\((\d+),(\d+),(\d+)/);
     if(m){ const d = new Date(Number(m[1]), Number(m[2]), Number(m[3])); return formatDateObj(d); }
   }
-  // YYYY-MM-DD
-  if(/^\d{4}-\d{2}-\d{2}$/.test(val)){
-    const d = new Date(val);
-    return formatDateObj(d);
-  }
-  // DD-MM-YYYY or DD/MM/YYYY
-  if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){
-    const [dd,mm,yy] = val.split(/[-/]/);
-    const d = new Date(`${yy}-${mm}-${dd}`);
-    return formatDateObj(d);
-  }
-  // fallback
-  const d = new Date(val);
-  return formatDateObj(d);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ const d=new Date(val); return formatDateObj(d); }
+  if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); }
+  return formatDateObj(new Date(val));
 }
-function formatDateObj(d){
-  if(!d || isNaN(d)) return { text:"", raw:null };
-  const dd = String(d.getDate()).padStart(2,'0');
-  const mm = String(d.getMonth()+1).padStart(2,'0');
-  const yy = d.getFullYear();
-  return { text:`${dd}-${mm}-${yy}`, raw:d };
-}
+function formatDateObj(d){ if(!d||isNaN(d)) return {text:"",raw:null}; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return {text:`${dd}-${mm}-${yy}`,raw:d}; }
+function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); if(isNaN(num)) return val; return "Rp. "+num.toLocaleString("id-ID")+",-"; }
 
-/* ==== UTIL: format uang rupiah ==== */
-function formatRupiah(val){
-  if(val===null || val===undefined || val==="") return "-";
-  const num = Number(String(val).replace(/[^0-9]/g,""));
-  if(isNaN(num)) return val;
-  return "Rp. "+num.toLocaleString("id-ID")+",-";
-}
-
-/* ==== Fetch & parse sheet ==== */
 function showLoading(){
   const cols = sheetsConfig[currentSheet].columns.length || 8;
-  document.getElementById("table-body").innerHTML = `<tr><td colspan="${cols}">⏳ Memuat data...</td></tr>`;
+  document.getElementById("table-body").innerHTML = `<tr><td colspan="${cols}"><div class="loader"></div></td></tr>`;
 }
+
 function fetchData(){
   showLoading();
   currentKeyword = ""; document.getElementById("searchBox").value = "";
   const cfg = sheetsConfig[currentSheet];
   const url = `https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?sheet=${encodeURIComponent(cfg.sheetName)}&tq=${encodeURIComponent(cfg.query)}`;
+  document.getElementById("update-time").textContent = "⏳ Memperbarui data...";
   fetch(url).then(r=>r.text()).then(rep=>{
     try{
-      const json = JSON.parse(rep.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
-      const rows = json.table.rows.map(r => r.c.map(c => c? c.v : ""));
-      // map to objects with uppercase keys
+      const json=JSON.parse(rep.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
+      const rows=json.table.rows.map(r=>r.c.map(c=>c?c.v:""));
       allData = rows.map(r=>{
-        const t = parseDate(r[1]);
-        let obj = {};
-        cfg.columns.forEach((col, idx)=> obj[col.toUpperCase()] = r[idx] || "");
-        if(obj["TANGGAL"]) obj["TANGGALOBJ"] = t.raw;
-        if(obj["TANGGAL"]) obj["TANGGAL"] = t.text || obj["TANGGAL"];
-        // format nominal-like fields for display (but keep raw numeric inside string)
-        if(obj["JUMLAH"]) obj["JUMLAH"] = formatRupiah(obj["JUMLAH"]);
-        if(obj["HASIL (RP)"]) obj["HASIL (RP)"] = formatRupiah(obj["HASIL (RP)"]);
-        if(obj["NOMINAL (RP)"]) obj["NOMINAL (RP)"] = formatRupiah(obj["NOMINAL (RP)"]);
+        const t=parseDate(r[1]); let obj={}; cfg.columns.forEach((col,idx)=>obj[col.toUpperCase()]=r[idx]||"");
+        if(obj["TANGGAL"]) obj["TANGGALOBJ"]=t.raw;
+        if(obj["TANGGAL"]) obj["TANGGAL"]=t.text||obj["TANGGAL"];
+        if(obj["JUMLAH"]) obj["JUMLAH"]=formatRupiah(obj["JUMLAH"]);
+        if(obj["HASIL (RP)"]) obj["HASIL (RP)"]=formatRupiah(obj["HASIL (RP)"]);
+        if(obj["NOMINAL (RP)"]) obj["NOMINAL (RP)"]=formatRupiah(obj["NOMINAL (RP)"]);
         return obj;
       });
-
-      // sort newest -> oldest based on TANGGALOBJ if available
-      allData.sort((a,b)=>{
-        const da = a["TANGGALOBJ"], db = b["TANGGALOBJ"];
-        if(!da && !db) return 0;
-        if(!da) return 1;
-        if(!db) return -1;
-        return db - da;
-      });
-
-      filteredData = allData;
-      // disable/enable date inputs on rekap
-      toggleDateInputs(currentSheet === "rekap");
+      allData.sort((a,b)=>{const da=a["TANGGALOBJ"],db=b["TANGGALOBJ"]; if(!da&&!db)return 0;if(!da)return 1;if(!db)return -1; return db-da;});
+      filteredData=allData;
+      toggleDateInputs(currentSheet==="rekap");
       renderTable();
-      const now = new Date();
-      document.getElementById("update-time").textContent = "Diperbarui otomatis: " + now.toLocaleString("id-ID", { weekday:"short", day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
+      const now=new Date();
+      document.getElementById("update-time").textContent = "Diperbarui otomatis: " + now.toLocaleString("id-ID",{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
     }catch(e){
-      document.getElementById("table-body").innerHTML = `<tr><td colspan="${cfg.columns.length}">❌ Gagal memuat data</td></tr>`;
+      document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">❌ Gagal memuat data</td></tr>`;
       console.error(e);
     }
   }).catch(err=>{
-    document.getElementById("table-body").innerHTML = `<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`;
+    document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`;
     console.error(err);
   });
 }
 
-/* ==== toggle date inputs for rekap ==== */
 function toggleDateInputs(disable){
-  const s = document.getElementById("startDate"), e = document.getElementById("endDate");
-  if(disable){
-    s.value=""; e.value=""; s.disabled=true; e.disabled=true;
-    s.style.opacity = 0.6; e.style.opacity = 0.6;
-  } else {
-    s.disabled=false; e.disabled=false;
-    s.style.opacity = 1; e.style.opacity = 1;
-  }
+  const s=document.getElementById("startDate"), e=document.getElementById("endDate");
+  s.disabled=disable; e.disabled=disable;
+  s.style.opacity=disable?0.6:1; e.style.opacity=disable?0.6:1;
+  if(disable){ s.value=""; e.value=""; }
 }
 
-/* ==== Filtering & searching ==== */
 function getFilteredData(){
-  const sDate = document.getElementById("startDate").value;
-  const eDate = document.getElementById("endDate").value;
-  const start = sDate ? new Date(sDate + "T00:00:00") : null;
-  const end = eDate ? new Date(eDate + "T23:59:59") : null;
+  const sDate=document.getElementById("startDate").value;
+  const eDate=document.getElementById("endDate").value;
+  const start = sDate ? new Date(sDate+"T00:00:00") : null;
+  const end = eDate ? new Date(eDate+"T23:59:59") : null;
   const keyword = currentKeyword.trim().toLowerCase();
-
   return allData.filter(row=>{
-    const tgl = row["TANGGALOBJ"] instanceof Date ? row["TANGGALOBJ"] : null;
-    let matchDate = true;
-    if(start && tgl) matchDate = tgl >= start;
-    if(end && tgl) matchDate = matchDate && tgl <= end;
-
-    const matchText = keyword
-      ? Object.values(row).some(v => String(v).toLowerCase().includes(keyword))
-      : true;
-
-    return matchDate && matchText;
+    const tgl=row["TANGGALOBJ"] instanceof Date ? row["TANGGALOBJ"]:null;
+    let matchDate=true; if(start&&tgl) matchDate=tgl>=start; if(end&&tgl) matchDate=matchDate&&tgl<=end;
+    const matchText=keyword ? Object.values(row).some(v=>String(v).toLowerCase().includes(keyword)) : true;
+    return matchDate&&matchText;
   });
 }
 
-/* ==== Render table & pagination ==== */
 function renderTable(){
   filteredData = getFilteredData();
   const cfg = sheetsConfig[currentSheet];
-  const thead = document.getElementById("table-head");
-  const tbody = document.getElementById("table-body");
-  tbody.innerHTML = ""; thead.innerHTML = "";
-
-  // header
-  const trh = document.createElement("tr");
-  cfg.columns.forEach(c => {
-    const th = document.createElement("th");
-    th.textContent = c;
-    trh.appendChild(th);
-  });
+  const thead=document.getElementById("table-head");
+  const tbody=document.getElementById("table-body");
+  tbody.innerHTML=""; thead.innerHTML="";
+  const trh=document.createElement("tr");
+  cfg.columns.forEach(c=>{const th=document.createElement("th"); th.textContent=c; trh.appendChild(th);});
   thead.appendChild(trh);
 
-  // pagination slice
-  const start = (currentPage - 1) * cfg.rowsPerPage;
-  const end = start + cfg.rowsPerPage;
-  const view = filteredData.slice(start, end);
+  const start=(currentPage-1)*cfg.rowsPerPage;
+  const end=start+cfg.rowsPerPage;
+  const view=filteredData.slice(start,end);
 
-  if(view.length === 0){
-    tbody.innerHTML = `<tr><td colspan="${cfg.columns.length}">Tidak ada data</td></tr>`;
-    document.getElementById("pagination").innerHTML = "";
-    document.getElementById("total-container").textContent = "";
-    return;
-  }
+  if(view.length===0){tbody.innerHTML=`<tr><td colspan="${cfg.columns.length}">Tidak ada data</td></tr>`;document.getElementById("pagination").innerHTML="";document.getElementById("total-container").textContent=""; return;}
 
-  view.forEach(row => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = cfg.columns.map(col => {
-      const key = col.toUpperCase();
-      let val = row[key] || "";
-      let cls = "";
-      if(["HASIL (RP)","NOMINAL (RP)","JUMLAH"].includes(key)) cls = "nominal-cell";
-      if(key === "FOTO" && val) {
-        val = `<img src="${val}" alt="Foto">`;
-      } else {
-        val = highlightText(String(val), currentKeyword);
-      }
+  view.forEach(row=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=cfg.columns.map(col=>{
+      const key=col.toUpperCase();
+      let val=row[key]||"";
+      let cls="";
+      if(["HASIL (RP)","NOMINAL (RP)","JUMLAH"].includes(key)) cls="nominal-cell";
+      if(key==="FOTO"&&val) val=`<img src="${val}" alt="Foto">`;
+      else val=highlightText(String(val), currentKeyword);
       return `<td class="${cls}">${val}</td>`;
     }).join("");
     tbody.appendChild(tr);
   });
 
-  // total (for sheets except rekap)
   if(["harian","bulanan","pengeluaran"].includes(currentSheet)){
-    const sum = filteredData.reduce((acc,row)=>{
-      const rawVal = (row["HASIL (RP)"] || row["NOMINAL (RP)"] || row["JUMLAH"]) || "";
-      const num = Number(String(rawVal).replace(/[^0-9]/g,""));
-      return acc + (isNaN(num)?0:num);
+    const sum=filteredData.reduce((acc,row)=>{
+      const rawVal=(row["HASIL (RP)"]||row["NOMINAL (RP)"]||row["JUMLAH"])||"";
+      const num=Number(String(rawVal).replace(/[^0-9]/g,""));
+      return acc+(isNaN(num)?0:num);
     },0);
-    document.getElementById("total-container").textContent = "Total: " + formatRupiah(sum);
-  } else {
-    document.getElementById("total-container").textContent = "";
-  }
+    document.getElementById("total-container").textContent="Total: "+formatRupiah(sum);
+  } else document.getElementById("total-container").textContent="";
 
   renderPagination();
 }
 
 function renderPagination(){
-  const p = document.getElementById("pagination");
-  p.innerHTML = "";
-  const cfg = sheetsConfig[currentSheet];
-  const pages = Math.ceil(filteredData.length / cfg.rowsPerPage);
-  if(pages <= 1) return;
-  const prev = document.createElement("button");
-  prev.textContent = "⬅️";
-  prev.disabled = currentPage === 1;
-  prev.onclick = ()=>{ currentPage--; renderTable(); };
-  p.appendChild(prev);
-
+  const p=document.getElementById("pagination");
+  p.innerHTML="";
+  const cfg=sheetsConfig[currentSheet];
+  const pages=Math.ceil(filteredData.length/cfg.rowsPerPage);
+  if(pages<=1) return;
+  const prev=document.createElement("button"); prev.textContent="⬅️"; prev.disabled=currentPage===1; prev.onclick=()=>{currentPage--;renderTable();}; p.appendChild(prev);
   for(let i=1;i<=pages;i++){
-    const b = document.createElement("button");
-    b.textContent = i;
-    if(i === currentPage) b.classList.add("active");
-    b.onclick = ()=>{ currentPage = i; renderTable(); };
-    p.appendChild(b);
+    const b=document.createElement("button"); b.textContent=i; if(i===currentPage)b.classList.add("active"); b.onclick=()=>{currentPage=i; renderTable();}; p.appendChild(b);
   }
-
-  const next = document.createElement("button");
-  next.textContent = "➡️";
-  next.disabled = currentPage === pages;
-  next.onclick = ()=>{ currentPage++; renderTable(); };
-  p.appendChild(next);
+  const next=document.createElement("button"); next.textContent="➡️"; next.disabled=currentPage===pages; next.onclick=()=>{currentPage++;renderTable();}; p.appendChild(next);
 }
 
-/* ==== highlight search ==== */
-function highlightText(text, keyword){
-  if(!keyword) return text;
-  const esc = keyword.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&');
-  const re = new RegExp('(' + esc + ')', 'gi');
-  return text.replace(re, '<span class="highlight">$1</span>');
-}
+function highlightText(text,keyword){if(!keyword) return text; const esc=keyword.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&'); const re=new RegExp('('+esc+')','gi'); return text.replace(re,'<span class="highlight">$1</span>');}
 
-/* ==== Export PDF (tanggal sudah tampil DD-MM-YYYY) ==== */
 function exportPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('l','pt','a4');
-  const cfg = sheetsConfig[currentSheet];
-  const title = document.querySelector("#menu button.active").textContent;
+  const { jsPDF }=window.jspdf;
+  const doc=new jsPDF('l','pt','a4');
+  const cfg=sheetsConfig[currentSheet];
+  const title=document.querySelector("#menu button.active").textContent;
+  const dateStr=new Date().toLocaleDateString("id-ID");
   doc.setFontSize(12);
-  doc.text(title, 40, 20);
-
-  // prepare rows: use filteredData (not paginated) and use displayed keys
-  const body = filteredData.map(row => cfg.columns.map(c => {
-    const key = c.toUpperCase();
-    let v = row[key] || "";
-    // if foto, ignore (can't embed easily)
-    if(key === "FOTO") return "";
-    return String(v);
-  }));
-
-  doc.autoTable({
-    head: [cfg.columns],
-    body,
-    startY: 40,
-    theme: 'grid',
-    styles: { fontSize:8, cellPadding:3, halign:'center' }
-  });
+  doc.text(title,40,20);
+  doc.text(`Tanggal ekspor: ${dateStr}`,40,32);
+  const body=filteredData.map(row=>cfg.columns.map(c=>{const key=c.toUpperCase(); if(key==="FOTO") return ""; return String(row[key]||"");}));
+  doc.autoTable({head:[cfg.columns],body,startY:45,theme:'grid',styles:{fontSize:8,cellPadding:3,halign:'center'}});
   doc.save(`${title.replace(/\s/g,"_")}.pdf`);
 }
 
-/* ==== UI handlers ==== */
-document.getElementById("searchBox").addEventListener("input", e=>{
-  currentKeyword = e.target.value.toLowerCase();
-  currentPage = 1;
-  renderTable();
-});
-document.getElementById("startDate").addEventListener("change", ()=>{ currentPage=1; renderTable(); });
-document.getElementById("endDate").addEventListener("change", ()=>{ currentPage=1; renderTable(); });
-document.getElementById("resetBtn").addEventListener("click", ()=>{
-  document.getElementById("searchBox").value = "";
-  document.getElementById("startDate").value = "";
-  document.getElementById("endDate").value = "";
-  currentKeyword = ""; currentPage = 1;
-  renderTable();
+// ==== UI Handlers ====
+document.getElementById("searchBox").addEventListener("input", e=>{currentKeyword=e.target.value.toLowerCase();currentPage=1;renderTable();});
+document.getElementById("startDate").addEventListener("change",()=>{currentPage=1;renderTable();});
+document.getElementById("endDate").addEventListener("change",()=>{currentPage=1;renderTable();});
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  document.getElementById("searchBox").value=""; document.getElementById("startDate").value=""; document.getElementById("endDate").value="";
+  currentKeyword=""; currentPage=1; renderTable();
 });
 document.getElementById("pdfBtn").addEventListener("click", exportPDF);
 
-/* menu switching */
 document.querySelectorAll("#menu button").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     document.querySelectorAll("#menu button").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
-    currentSheet = btn.dataset.sheet;
-    currentPage = 1;
-    // reset filters when switching sheet (but keep rekap disabled)
-    document.getElementById("searchBox").value = "";
-    currentKeyword = "";
-    document.getElementById("startDate").value = "";
-    document.getElementById("endDate").value = "";
+    currentSheet=btn.dataset.sheet;
+    currentPage=1;
+    document.getElementById("searchBox").value=""; currentKeyword="";
+    document.getElementById("startDate").value=""; document.getElementById("endDate").value="";
+    document.title=`${btn.textContent} | DASHBOARD KEUANGAN RT 04 RW 01 LATSARI`;
     fetchData();
   });
 });
 
-/* initial load */
+// ==== Initial load ====
 fetchData();
-/* auto-refresh setiap 60s */
-setInterval(()=>{
-  // only refresh if not on rekap? still refresh rekap too
-  fetchData();
-}, 60000);
+setInterval(fetchData,60000);
 </script>
 </body>
 </html>
