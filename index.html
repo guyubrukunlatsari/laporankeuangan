@@ -214,7 +214,7 @@ function renderTable(){
       if(["JUMLAH","Hasil (Rp)","NOMINAL (Rp)"].includes(col))
   val = `<span class="rupiah">${val}</span>`;
       if(col==="FOTO" && val) val=`<img src="${val}" alt="Foto">`;
-      return `<td>${highlightText(val,currentKeyword)}</td>`;
+      return `<td>${val}</td>`;
     }).join("");
     tbody.appendChild(tr);
   });
