@@ -35,11 +35,6 @@
 
   #update-time {text-align:center; color:#aaa; font-size:0.75rem; margin-bottom:5px;}
   #total-container { text-align:center; margin-top:5px; font-weight:bold; color:#00ff88; }
-/* Warna isi kolom uang sama seperti total */
-td.rupiah {
-  color: #00ff88; /* sama persis dengan warna total */
-  font-weight: bold;
-}
   footer { text-align:center; font-size:10px; color:#777; margin-top:10px; }
 
   .hidden{display:none;}
@@ -211,10 +206,9 @@ function renderTable(){
     const tr=document.createElement("tr");
     tr.innerHTML=columns.map(col=>{
       let val=row[col]||"";
-      if(["JUMLAH","Hasil (Rp)","NOMINAL (Rp)"].includes(col))
-  val = `<span class="rupiah">${val}</span>`;
+      if(col==="JUMLAH" || col==="Hasil (Rp)") val=`<span class="jumlah">${val}</span>`;
       if(col==="FOTO" && val) val=`<img src="${val}" alt="Foto">`;
-      return `<td>${val}</td>`;
+      return `<td>${highlightText(val,currentKeyword)}</td>`;
     }).join("");
     tbody.appendChild(tr);
   });
