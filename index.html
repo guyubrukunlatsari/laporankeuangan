@@ -25,20 +25,9 @@
   tr:nth-child(even){background:#1e1e1e;}
   tr:hover{background:#2a2a2a;}
 
-  /* efek highlight pencarian */
-  .highlight {
-    background: #00ff44;
-    color: #000;
-    font-weight: bold;
-    border-radius: 3px;
-    padding: 0 2px;
-  }
+  .highlight { background: #00ff44; color: #000; font-weight: bold; border-radius: 3px; padding: 0 2px; }
 
-  /* Warna hijau khusus nominal */
-  td.nominal-cell, td.jumlah-cell {
-    color: #00ff88 !important;
-    font-weight: bold;
-  }
+  td.nominal-cell, td.jumlah-cell { color: #00ff88 !important; font-weight: bold; }
 
   .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:5px; margin-top:5px;}
   .pagination button{padding:4px 6px; border-radius:5px; font-size:0.8rem;}
@@ -99,15 +88,21 @@ const sheetsConfig = {
 let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKeyword="";
 
 function parseDate(val) {
-  if (!val) return { text: "", raw: new Date("1970-01-01") };
-  const d = new Date(val);
-  if (!isNaN(d)) {
-    const day = String(d.getDate()).padStart(2,'0');
-    const month = String(d.getMonth()+1).padStart(2,'0');
-    const year = d.getFullYear();
-    return { text: `${day}-${month}-${year}`, raw: d };
+  if (!val) return { text: "", raw: null };
+  let d;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    d = new Date(val);
+  } else if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)) {
+    const [day, month, year] = val.split(/[-/]/);
+    d = new Date(`${year}-${month}-${day}`);
+  } else {
+    d = new Date(val);
   }
-  return { text: val, raw: new Date("1970-01-01") };
+  if (isNaN(d)) return { text: val, raw: null };
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return { text: `${day}-${month}-${year}`, raw: d };
 }
 
 function showLoading(){
@@ -118,7 +113,6 @@ function fetchData(){
   showLoading();
   const config = sheetsConfig[currentSheet];
   const url=`https://docs.google.com/spreadsheets/d/${config.sheetId}/gviz/tq?sheet=${config.sheetName}&tq=${encodeURIComponent(config.query)}`;
-
   fetch(url)
   .then(res=>res.text())
   .then(rep=>{
@@ -158,16 +152,22 @@ function highlightText(text, keyword){
   return text.replace(regex,'<span class="highlight">$1</span>');
 }
 
-function getFilteredData(){
-  const sDate=document.getElementById("startDate").value;
-  const eDate=document.getElementById("endDate").value;
-  const start=sDate?new Date(sDate):null;
-  const end=eDate?new Date(eDate):null;
-  return allData.filter(row=>{
-    let matchDate=true;
-    if(start && row["TanggalObj"]) matchDate=row["TanggalObj"]>=start;
-    if(end && row["TanggalObj"]) matchDate=matchDate && row["TanggalObj"]<=end;
-    let matchText=currentKeyword?Object.values(row).some(v=>String(v).toLowerCase().includes(currentKeyword)):true;
+function getFilteredData() {
+  const sDate = document.getElementById("startDate").value;
+  const eDate = document.getElementById("endDate").value;
+  const start = sDate ? new Date(sDate + "T00:00:00") : null;
+  const end = eDate ? new Date(eDate + "T23:59:59") : null;
+
+  return allData.filter(row => {
+    let matchDate = true;
+    const tgl = row["TanggalObj"] instanceof Date ? row["TanggalObj"] : null;
+    if (start && tgl) matchDate = tgl >= start;
+    if (end && tgl) matchDate = matchDate && tgl <= end;
+
+    const matchText = currentKeyword
+      ? Object.values(row).some(v => String(v).toLowerCase().includes(currentKeyword))
+      : true;
+
     return matchDate && matchText;
   });
 }
