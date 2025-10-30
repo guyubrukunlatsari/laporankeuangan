@@ -39,12 +39,21 @@ tr:hover{background:#222;}
 .highlight{background:#00ff44;color:#000;font-weight:700;border-radius:3px;padding:0 3px;}
 td.nominal-cell { color: var(--green) !important; font-weight:700; }
 
-/* Kolom HADIR, IZIN, ALPHA */
+/* Kolom NO kecil */
+th:nth-child(1), td:nth-child(1) {
+  width:5%;
+  min-width:40px;
+  max-width:60px;
+  text-align:center;
+  white-space:nowrap;
+}
+
+/* Kolom HADIR, IZIN, ALPHA sama lebar */
 th:nth-child(4), td:nth-child(4),
 th:nth-child(5), td:nth-child(5),
 th:nth-child(6), td:nth-child(6) {
-  width: 18%;       /* semua sama lebar */
-  min-width: 140px;
+  width: 18%;
+  min-width:140px;
   white-space: normal; 
   text-align: center;
   vertical-align: middle;
@@ -108,7 +117,7 @@ footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <script>
-// ==== CONFIG & DATA ====
+/* ==== CONFIG ==== */
 const sheetsConfig = {
   harian:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Jimpitan Harian", columns:["NO","TANGGAL","HARI JAGA","HADIR","IZIN","ALPHA","HASIL (Rp)","KETERANGAN"], query:"SELECT A,B,C,E,F,G,H,I", rowsPerPage:10 },
   bulanan:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Warga Bulanan", columns:["NO","TANGGAL","NAMA WARGA","PERIODE BAYAR","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F,G", rowsPerPage:10 },
@@ -118,25 +127,24 @@ const sheetsConfig = {
 
 let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKeyword="";
 
-// ==== UTIL & FETCH ====
-function parseDate(val){ if(!val) return { text:"", raw:null }; if(typeof val==="string"&&val.startsWith("Date(")){ const m=val.match(/Date\((\d+),(\d+),(\d+)/); if(m){ const d=new Date(Number(m[1]),Number(m[2]),Number(m[3])); return formatDateObj(d); } } if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ return formatDateObj(new Date(val)); } if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); } return formatDateObj(new Date(val)); }
+/* ==== UTIL ==== */
+function parseDate(val){ if(!val) return { text:"", raw:null }; if(typeof val==="string" && val.startsWith("Date(")){ const m=val.match(/Date\((\d+),(\d+),(\d+)/); if(m){ const d=new Date(Number(m[1]),Number(m[2]),Number(m[3])); return formatDateObj(d); } } if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ return formatDateObj(new Date(val)); } if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); } return formatDateObj(new Date(val)); }
 function formatDateObj(d){ if(!d||isNaN(d)) return { text:"", raw:null }; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return { text:`${dd}-${mm}-${yy}`, raw:d }; }
 function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); return isNaN(num)?val:"Rp. "+num.toLocaleString("id-ID")+",-"; }
 
+/* ==== FETCH DATA ==== */
 function showLoading(){ const cols=sheetsConfig[currentSheet].columns.length||8; document.getElementById("table-body").innerHTML=`<tr><td colspan="${cols}"><div class="loader"></div></td></tr>`; }
 
 function fetchData(){
-  showLoading();
-  currentKeyword=""; document.getElementById("searchBox").value="";
+  showLoading(); currentKeyword=""; document.getElementById("searchBox").value="";
   const cfg=sheetsConfig[currentSheet];
   const url=`https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?sheet=${encodeURIComponent(cfg.sheetName)}&tq=${encodeURIComponent(cfg.query)}`;
   fetch(url).then(r=>r.text()).then(rep=>{
     try{
       const json=JSON.parse(rep.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]);
-      const rows=json.table.rows.map(r=>r.c.map(c=>c?c.v:""));
+      const rows=json.table.rows.map(r=>r.c.map(c=>c?v=c.v:""));
       allData=rows.map(r=>{
-        const t=parseDate(r[1]);
-        let obj={};
+        const t=parseDate(r[1]); let obj={};
         cfg.columns.forEach((col,idx)=> obj[col.toUpperCase()]=r[idx]||"");
         if(obj["TANGGAL"]) obj["TANGGALOBJ"]=t.raw;
         if(obj["TANGGAL"]) obj["TANGGAL"]=t.text||obj["TANGGAL"];
@@ -145,32 +153,33 @@ function fetchData(){
         if(obj["NOMINAL (RP)"]) obj["NOMINAL (RP)"]=formatRupiah(obj["NOMINAL (RP)"]);
         return obj;
       });
-      allData.sort((a,b)=>{ const da=a["TANGGALOBJ"], db=b["TANGGALOBJ"]; if(!da&&!db) return 0; if(!da) return 1; if(!db) return -1; return db-da; });
+      allData.sort((a,b)=>{ const da=a["TANGGALOBJ"],db=b["TANGGALOBJ"]; if(!da&&!db) return 0; if(!da) return 1; if(!db) return -1; return db-da; });
       filteredData=allData;
       toggleDateInputs(currentSheet==="rekap");
       renderTable();
       const now=new Date();
-      document.getElementById("update-time").textContent = "Diperbarui otomatis: "+now.toLocaleString("id-ID",{ weekday:"short", day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
+      document.getElementById("update-time").textContent="Diperbarui otomatis: "+now.toLocaleString("id-ID",{ weekday:"short", day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"});
     }catch(e){
-      document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">❌ Gagal memuat data</td></tr>`;
-      console.error(e);
+      document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">❌ Gagal memuat data</td></tr>`; console.error(e);
     }
   }).catch(err=>{
-    document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`;
-    console.error(err);
+    document.getElementById("table-body").innerHTML=`<tr><td colspan="${cfg.columns.length}">⚠️ Tidak dapat mengambil data (cek koneksi / izin sheet)</td></tr>`; console.error(err);
   });
 }
 
-function toggleDateInputs(disable){ const s=document.getElementById("startDate"), e=document.getElementById("endDate"); s.disabled=disable; e.disabled=disable; s.style.opacity=disable?0.6:1; e.style.opacity=disable?0.6:1; if(disable){ s.value=""; e.value=""; } }
+function toggleDateInputs(disable){ const s=document.getElementById("startDate"), e=document.getElementById("endDate"); if(disable){ s.value=""; e.value=""; s.disabled=true; e.disabled=true; s.style.opacity=0.6; e.style.opacity=0.6; } else{ s.disabled=false; e.disabled=false; s.style.opacity=1; e.style.opacity=1; } }
 
 function getFilteredData(){
-  const sDate=document.getElementById("startDate").value, eDate=document.getElementById("endDate").value;
+  const sDate=document.getElementById("startDate").value;
+  const eDate=document.getElementById("endDate").value;
   const start=sDate?new Date(sDate+"T00:00:00"):null;
   const end=eDate?new Date(eDate+"T23:59:59"):null;
   const keyword=currentKeyword.trim().toLowerCase();
   return allData.filter(row=>{
     const tgl=row["TANGGALOBJ"] instanceof Date?row["TANGGALOBJ"]:null;
-    let matchDate=true; if(start&&tgl) matchDate=tgl>=start; if(end&&tgl) matchDate=matchDate&&tgl<=end;
+    let matchDate=true;
+    if(start&&tgl) matchDate=tgl>=start;
+    if(end&&tgl) matchDate=matchDate&&tgl<=end;
     const matchText=keyword?Object.values(row).some(v=>String(v).toLowerCase().includes(keyword)):true;
     return matchDate&&matchText;
   });
@@ -179,86 +188,87 @@ function getFilteredData(){
 function renderTable(){
   filteredData=getFilteredData();
   const cfg=sheetsConfig[currentSheet];
-  const thead=document.getElementById("table-head"), tbody=document.getElementById("table-body");
+  const thead=document.getElementById("table-head");
+  const tbody=document.getElementById("table-body");
   tbody.innerHTML=""; thead.innerHTML="";
-
   const trh=document.createElement("tr");
   cfg.columns.forEach(c=>{ const th=document.createElement("th"); th.textContent=c; trh.appendChild(th); });
   thead.appendChild(trh);
 
-  const start=(currentPage-1)*cfg.rowsPerPage, end=start+cfg.rowsPerPage;
+  const start=(currentPage-1)*cfg.rowsPerPage;
+  const end=start+cfg.rowsPerPage;
   const view=filteredData.slice(start,end);
 
-  if(view.length===0){
-    tbody.innerHTML=`<tr><td colspan="${cfg.columns.length}">Tidak ada data</td></tr>`;
-    document.getElementById("pagination").innerHTML=""; document.getElementById("total-container").textContent="";
-    return;
-  }
+  if(view.length===0){ tbody.innerHTML=`<tr><td colspan="${cfg.columns.length}">Tidak ada data</td></tr>`; document.getElementById("pagination").innerHTML=""; document.getElementById("total-container").textContent=""; return; }
 
   view.forEach(row=>{
     const tr=document.createElement("tr");
     tr.innerHTML=cfg.columns.map(col=>{
-      const key=col.toUpperCase(); let val=row[key]||""; let cls="";
+      const key=col.toUpperCase();
+      let val=row[key]||"";
+      let cls="";
       if(["HASIL (RP)","NOMINAL (RP)","JUMLAH"].includes(key)) cls="nominal-cell";
-      if(key==="FOTO"&&val){ val=`<img src="${val}" alt="Foto">`; }
-      else if(["HADIR","IZIN","ALPHA"].includes(key)) { val=String(val).replace(/\n/g,"<br>"); }
-      else { val=highlightText(String(val),currentKeyword); }
+      if(["HADIR","IZIN","ALPHA"].includes(key)&&val) val=val.split("\n").map(l=>l.trim()).filter(Boolean).join("<br>");
+      if(key==="FOTO"&&val) val=`<img src="${val}" alt="Foto">`; else val=highlightText(String(val),currentKeyword);
       return `<td class="${cls}">${val}</td>`;
     }).join("");
     tbody.appendChild(tr);
   });
 
   if(["harian","bulanan","pengeluaran"].includes(currentSheet)){
-    const sum=filteredData.reduce((acc,row)=>{
-      const rawVal=(row["HASIL (RP)"]||row["NOMINAL (RP)"]||row["JUMLAH"])||"";
-      const num=Number(String(rawVal).replace(/[^0-9]/g,""));
-      return acc+(isNaN(num)?0:num);
-    },0);
+    const sum=filteredData.reduce((acc,row)=>{ const rawVal=(row["HASIL (RP)"]||row["NOMINAL (RP)"]||row["JUMLAH"])||""; const num=Number(String(rawVal).replace(/[^0-9]/g,"")); return acc+(isNaN(num)?0:num); },0);
     document.getElementById("total-container").textContent="Total: "+formatRupiah(sum);
-  } else { document.getElementById("total-container").textContent=""; }
+  } else document.getElementById("total-container").textContent="";
 
   renderPagination();
 }
 
 function renderPagination(){
-  const p=document.getElementById("pagination");
-  p.innerHTML=""; const cfg=sheetsConfig[currentSheet]; const pages=Math.ceil(filteredData.length/cfg.rowsPerPage);
+  const p=document.getElementById("pagination"); p.innerHTML="";
+  const cfg=sheetsConfig[currentSheet];
+  const pages=Math.ceil(filteredData.length/cfg.rowsPerPage);
   if(pages<=1) return;
   const prev=document.createElement("button"); prev.textContent="⬅️"; prev.disabled=currentPage===1; prev.onclick=()=>{ currentPage--; renderTable(); }; p.appendChild(prev);
-  for(let i=1;i<=pages;i++){ const b=document.createElement("button"); b.textContent=i; if(i===currentPage)b.classList.add("active"); b.onclick=()=>{ currentPage=i; renderTable(); }; p.appendChild(b);}
+
+  for(let i=1;i<=pages;i++){ const b=document.createElement("button"); b.textContent=i; if(i===currentPage) b.classList.add("active"); b.onclick=()=>{ currentPage=i; renderTable(); }; p.appendChild(b); }
+
   const next=document.createElement("button"); next.textContent="➡️"; next.disabled=currentPage===pages; next.onclick=()=>{ currentPage++; renderTable(); }; p.appendChild(next);
 }
 
 function highlightText(text,keyword){ if(!keyword) return text; const esc=keyword.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&'); const re=new RegExp('('+esc+')','gi'); return text.replace(re,'<span class="highlight">$1</span>'); }
 
 function exportPDF(){
-  const { jsPDF }=window.jspdf; const doc=new jsPDF('l','pt','a4'); const cfg=sheetsConfig[currentSheet];
-  const title=document.querySelector("#menu button.active").textContent;
+  const { jsPDF }=window.jspdf; const doc=new jsPDF('l','pt','a4'); const cfg=sheetsConfig[currentSheet]; const title=document.querySelector("#menu button.active").textContent;
   doc.setFontSize(12); doc.text(title,40,20);
-  const body=filteredData.map(row=>cfg.columns.map(c=>{ const key=c.toUpperCase(); if(key==="FOTO") return ""; return String(row[key]||""); }));
+  const body=filteredData.map(row=>cfg.columns.map(c=>{ const key=c.toUpperCase(); let v=row[key]||""; if(key==="FOTO") return ""; return String(v); }));
   doc.autoTable({ head:[cfg.columns], body, startY:40, theme:'grid', styles:{ fontSize:8, cellPadding:3, halign:'center' } });
   doc.save(`${title.replace(/\s/g,"_")}.pdf`);
 }
 
-// ==== UI handlers ====
+/* ==== UI handlers ==== */
 document.getElementById("searchBox").addEventListener("input", e=>{ currentKeyword=e.target.value.toLowerCase(); currentPage=1; renderTable(); });
 document.getElementById("startDate").addEventListener("change", ()=>{ currentPage=1; renderTable(); });
 document.getElementById("endDate").addEventListener("change", ()=>{ currentPage=1; renderTable(); });
-document.getElementById("resetBtn").addEventListener("click", ()=>{ document.getElementById("searchBox").value=""; document.getElementById("startDate").value=""; document.getElementById("endDate").value=""; currentKeyword=""; currentPage=1; renderTable(); });
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  document.getElementById("searchBox").value=""; document.getElementById("startDate").value=""; document.getElementById("endDate").value="";
+  currentKeyword=""; currentPage=1; renderTable();
+});
 document.getElementById("pdfBtn").addEventListener("click", exportPDF);
 
+/* menu switching */
 document.querySelectorAll("#menu button").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     document.querySelectorAll("#menu button").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
-    currentSheet=btn.dataset.sheet; currentPage=1;
-    document.getElementById("searchBox").value=""; currentKeyword="";
+    currentSheet=btn.dataset.sheet;
+    currentPage=1; currentKeyword="";
+    document.getElementById("searchBox").value="";
     document.getElementById("startDate").value=""; document.getElementById("endDate").value="";
-    document.title=`${btn.textContent} | DASHBOARD KEUANGAN RT 04 RW 01 LATSARI`;
     fetchData();
   });
 });
 
+/* initial load & auto refresh */
 fetchData(); setInterval(fetchData,60000);
 </script>
 </body>
