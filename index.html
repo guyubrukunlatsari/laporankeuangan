@@ -74,7 +74,7 @@ h1 {
 
 /* ===== TABEL ===== */
 .table-wrapper {
-  overflow-x:auto;              /* scroll horizontal jika layar kecil */
+  overflow-x:auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom:10px;
   border-radius:6px;
@@ -83,7 +83,7 @@ h1 {
 table {
   width:100%;
   border-collapse:collapse;
-  min-width:700px;             /* tetap lebar agar kolom tidak pecah */
+  min-width:700px;
   table-layout:auto;
 }
 th, td {
@@ -131,6 +131,21 @@ footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
   h1 { font-size:1rem; }
   #menu button { font-size:0.75rem; padding:3px 6px; }
 }
+
+/* ===== KHUSUS REKAP KEUANGAN ===== */
+body.rekap-active table#main-table {
+  min-width: auto !important;
+  width: 100% !important;
+}
+body.rekap-active table#main-table th,
+body.rekap-active table#main-table td {
+  font-size:0.85rem !important;
+  padding:6px !important;
+  text-align:center !important;
+}
+body.rekap-active td.nominal-cell {
+  text-align:center !important;
+}
 </style>
 </head>
 <body>
@@ -166,7 +181,6 @@ footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
 <script>
 // ==== CONFIG & UTILS ====
 const sheetsConfig = {
@@ -175,7 +189,9 @@ const sheetsConfig = {
   pengeluaran:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Pengeluaran", columns:["NO","TANGGAL","KEPERLUAN","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F", rowsPerPage:10 },
   rekap:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Rekap Keuangan RT", columns:["DESKRIPSI","JUMLAH"], query:"SELECT A,B", rowsPerPage:1000 }
 };
+
 let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKeyword="";
+
 function parseDate(val){ if(!val) return {text:"", raw:null}; if(typeof val==="string" && val.startsWith("Date(")){ const m=val.match(/Date\((\d+),(\d+),(\d+)/); if(m){ const d=new Date(Number(m[1]),Number(m[2]),Number(m[3])); return formatDateObj(d); } } if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ return formatDateObj(new Date(val)); } if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); } return formatDateObj(new Date(val)); }
 function formatDateObj(d){ if(!d||isNaN(d)) return {text:"", raw:null}; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return {text:`${dd}-${mm}-${yy}`, raw:d}; }
 function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); return isNaN(num)?val:"Rp. "+num.toLocaleString("id-ID")+",-"; }
@@ -308,7 +324,12 @@ document.querySelectorAll("#menu button").forEach(btn=>{
     currentSheet=btn.dataset.sheet;
     currentPage=1; currentKeyword="";
     document.getElementById("searchBox").value="";
-    document.getElementById("startDate").value=""; document.getElementById("endDate").value="";
+    document.getElementById("startDate").value=""; 
+    document.getElementById("endDate").value="";
+    
+    if(currentSheet === "rekap") document.body.classList.add("rekap-active");
+    else document.body.classList.remove("rekap-active");
+
     fetchData();
   });
 });
@@ -318,3 +339,4 @@ fetchData(); setInterval(fetchData,60000);
 </script>
 </body>
 </html>
+
