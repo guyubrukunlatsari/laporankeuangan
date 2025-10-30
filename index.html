@@ -29,8 +29,8 @@ h1 { text-align:center; color:var(--green); margin-bottom:10px; font-size:1.2rem
 .filter-container button:hover{ background:var(--green); }
 
 .table-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:10px; border-radius:6px; }
-table { width:100%; border-collapse:collapse; min-width:360px; }
-th, td { padding:8px; text-align:center; font-size:0.85rem; border-bottom:1px solid #333; }
+table { width:100%; border-collapse:collapse; min-width:360px; table-layout: fixed; }
+th, td { padding:8px; font-size:0.85rem; border-bottom:1px solid #333; text-align:center; vertical-align:middle; }
 th { background-color:var(--accent); color:#000; font-weight:700; }
 td.foto img { max-width:60px; max-height:50px; border-radius:4px; display:block; margin:auto; }
 tr:nth-child(even){background:#171717;}
@@ -39,15 +39,16 @@ tr:hover{background:#222;}
 .highlight{background:#00ff44;color:#000;font-weight:700;border-radius:3px;padding:0 3px;}
 td.nominal-cell { color: var(--green) !important; font-weight:700; }
 
-/* Lebar khusus kolom HADIR, IZIN, ALPHA */
+/* Kolom HADIR, IZIN, ALPHA */
 th:nth-child(4), td:nth-child(4),
 th:nth-child(5), td:nth-child(5),
 th:nth-child(6), td:nth-child(6) {
-  min-width: 160px;  /* bisa disesuaikan */
-  max-width: 200px;
-  white-space: nowrap;   /* nama tetap satu baris */
-  text-align: left;      /* rata kiri agar lebih rapi */
-  padding-left:8px;
+  width: 18%;       /* semua sama lebar */
+  min-width: 140px;
+  white-space: normal; 
+  text-align: center;
+  vertical-align: middle;
+  word-break: break-word;
 }
 
 .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:8px;}
@@ -107,7 +108,7 @@ footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <script>
-// ==== CONFIG ====
+// ==== CONFIG & DATA ====
 const sheetsConfig = {
   harian:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Jimpitan Harian", columns:["NO","TANGGAL","HARI JAGA","HADIR","IZIN","ALPHA","HASIL (Rp)","KETERANGAN"], query:"SELECT A,B,C,E,F,G,H,I", rowsPerPage:10 },
   bulanan:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Warga Bulanan", columns:["NO","TANGGAL","NAMA WARGA","PERIODE BAYAR","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F,G", rowsPerPage:10 },
@@ -117,17 +118,8 @@ const sheetsConfig = {
 
 let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKeyword="";
 
-// ==== UTIL ====
-function parseDate(val){
-  if(!val) return { text:"", raw:null };
-  if(typeof val === "string" && val.startsWith("Date(")){
-    const m = val.match(/Date\((\d+),(\d+),(\d+)/);
-    if(m){ const d = new Date(Number(m[1]), Number(m[2]), Number(m[3])); return formatDateObj(d); }
-  }
-  if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ const d=new Date(val); return formatDateObj(d); }
-  if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); }
-  return formatDateObj(new Date(val));
-}
+// ==== UTIL & FETCH ====
+function parseDate(val){ if(!val) return { text:"", raw:null }; if(typeof val==="string"&&val.startsWith("Date(")){ const m=val.match(/Date\((\d+),(\d+),(\d+)/); if(m){ const d=new Date(Number(m[1]),Number(m[2]),Number(m[3])); return formatDateObj(d); } } if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ return formatDateObj(new Date(val)); } if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); } return formatDateObj(new Date(val)); }
 function formatDateObj(d){ if(!d||isNaN(d)) return { text:"", raw:null }; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return { text:`${dd}-${mm}-${yy}`, raw:d }; }
 function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); return isNaN(num)?val:"Rp. "+num.toLocaleString("id-ID")+",-"; }
 
@@ -169,11 +161,7 @@ function fetchData(){
   });
 }
 
-function toggleDateInputs(disable){
-  const s=document.getElementById("startDate"), e=document.getElementById("endDate");
-  s.disabled=disable; e.disabled=disable; s.style.opacity=disable?0.6:1; e.style.opacity=disable?0.6:1;
-  if(disable){ s.value=""; e.value=""; }
-}
+function toggleDateInputs(disable){ const s=document.getElementById("startDate"), e=document.getElementById("endDate"); s.disabled=disable; e.disabled=disable; s.style.opacity=disable?0.6:1; e.style.opacity=disable?0.6:1; if(disable){ s.value=""; e.value=""; } }
 
 function getFilteredData(){
   const sDate=document.getElementById("startDate").value, eDate=document.getElementById("endDate").value;
@@ -194,7 +182,6 @@ function renderTable(){
   const thead=document.getElementById("table-head"), tbody=document.getElementById("table-body");
   tbody.innerHTML=""; thead.innerHTML="";
 
-  // header
   const trh=document.createElement("tr");
   cfg.columns.forEach(c=>{ const th=document.createElement("th"); th.textContent=c; trh.appendChild(th); });
   thead.appendChild(trh);
@@ -272,7 +259,6 @@ document.querySelectorAll("#menu button").forEach(btn=>{
   });
 });
 
-// ==== Initial load ====
 fetchData(); setInterval(fetchData,60000);
 </script>
 </body>
