@@ -74,7 +74,7 @@ h1 {
 
 /* ===== TABEL ===== */
 .table-wrapper {
-  overflow-x:auto;              /* scroll horizontal jika layar kecil */
+  overflow-x:auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom:10px;
   border-radius:6px;
@@ -83,7 +83,6 @@ h1 {
 table {
   width:100%;
   border-collapse:collapse;
-  min-width:700px;             /* tetap lebar agar kolom tidak pecah */
   table-layout:auto;
 }
 th, td {
@@ -92,6 +91,8 @@ th, td {
   border-bottom:1px solid #333;
   text-align:center;
   vertical-align:middle;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 th { background-color:var(--accent); color:#000; font-weight:700; }
 td.foto img { max-width:60px; max-height:50px; border-radius:4px; display:block; margin:auto; }
@@ -101,7 +102,7 @@ tr:hover{background:#222;}
 .highlight{background:#00ff44;color:#000;font-weight:700;border-radius:3px;padding:0 3px;}
 td.nominal-cell { color: var(--green) !important; font-weight:700; }
 
-/* Kolom spesifik */
+/* Kolom spesifik default */
 th:nth-child(1), td:nth-child(1) { width:2%; min-width:40px; max-width:60px; }
 th:nth-child(2), td:nth-child(2),
 th:nth-child(3), td:nth-child(3) { width:8%; min-width:80px; max-width:100px; }
@@ -130,6 +131,21 @@ footer { text-align:center; font-size:11px; color:#777; margin-top:12px; }
 @media(max-width:400px){
   h1 { font-size:1rem; }
   #menu button { font-size:0.75rem; padding:3px 6px; }
+}
+
+/* ===== KHUSUS REKAP KEUANGAN ===== */
+body.rekap-active table#main-table {
+  table-layout: fixed;
+}
+body.rekap-active table#main-table th:nth-child(1),
+body.rekap-active table#main-table td:nth-child(1) {
+  width: 70%;  /* DESKRIPSI */
+  text-align: left;
+}
+body.rekap-active table#main-table th:nth-child(2),
+body.rekap-active table#main-table td:nth-child(2) {
+  width: 30%;  /* JUMLAH */
+  text-align: right;
 }
 </style>
 </head>
@@ -175,7 +191,10 @@ const sheetsConfig = {
   pengeluaran:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Laporan Pengeluaran", columns:["NO","TANGGAL","KEPERLUAN","NOMINAL (Rp)","KETERANGAN","FOTO"], query:"SELECT A,B,C,D,E,F", rowsPerPage:10 },
   rekap:{ sheetId:"1g1fp70L86yFkZt6OcOQjdKK9kgtHmPb2TqLou7a-4Pw", sheetName:"Rekap Keuangan RT", columns:["DESKRIPSI","JUMLAH"], query:"SELECT A,B", rowsPerPage:1000 }
 };
+
 let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKeyword="";
+
+// parsing tanggal & format rupiah
 function parseDate(val){ if(!val) return {text:"", raw:null}; if(typeof val==="string" && val.startsWith("Date(")){ const m=val.match(/Date\((\d+),(\d+),(\d+)/); if(m){ const d=new Date(Number(m[1]),Number(m[2]),Number(m[3])); return formatDateObj(d); } } if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ return formatDateObj(new Date(val)); } if(/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)){ const [dd,mm,yy]=val.split(/[-/]/); return formatDateObj(new Date(`${yy}-${mm}-${dd}`)); } return formatDateObj(new Date(val)); }
 function formatDateObj(d){ if(!d||isNaN(d)) return {text:"", raw:null}; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return {text:`${dd}-${mm}-${yy}`, raw:d}; }
 function formatRupiah(val){ if(val===null||val===undefined||val==="") return "-"; const num=Number(String(val).replace(/[^0-9]/g,"")); return isNaN(num)?val:"Rp. "+num.toLocaleString("id-ID")+",-"; }
@@ -309,6 +328,8 @@ document.querySelectorAll("#menu button").forEach(btn=>{
     currentPage=1; currentKeyword="";
     document.getElementById("searchBox").value="";
     document.getElementById("startDate").value=""; document.getElementById("endDate").value="";
+    document.body.classList.remove("rekap-active");
+    if(currentSheet==="rekap") document.body.classList.add("rekap-active");
     fetchData();
   });
 });
