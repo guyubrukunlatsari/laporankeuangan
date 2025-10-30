@@ -24,24 +24,15 @@
   td.foto img { max-width:60px; max-height:50px; border-radius:3px; display:block; margin:auto; }
   tr:nth-child(even){background:#1e1e1e;}
   tr:hover{background:#2a2a2a;}
-
   .highlight{background:#00ff44;color:#000;font-weight:bold;border-radius:3px;padding:0 2px;}
-
-  /* Tambahan khusus warna hijau untuk kolom nominal */
-  td.nominal-cell, td.jumlah-cell {
-    color: #00ff88 !important;
-    font-weight: bold;
-  }
-
+  td.nominal-cell, td.jumlah-cell { color:#00ff88 !important; font-weight:bold; }
   .pagination{display:flex; justify-content:center; flex-wrap:wrap; gap:5px; margin-top:5px;}
   .pagination button{padding:4px 6px; border-radius:5px; font-size:0.8rem;}
   .pagination button.active{background:#00ff88;color:#000; transform:scale(1.1);}
   .pagination button:disabled{background:#333;color:#777; cursor:not-allowed;}
-
   #update-time {text-align:center; color:#aaa; font-size:0.75rem; margin-bottom:5px;}
   #total-container { text-align:center; margin-top:5px; font-weight:bold; color:#00ff88; }
   footer { text-align:center; font-size:10px; color:#777; margin-top:10px; }
-
   .hidden{display:none;}
   @media(max-width:600px){
     .filter-container input, .filter-container button { width:100%; max-width:220px;}
@@ -94,14 +85,15 @@ let currentSheet="harian", allData=[], filteredData=[], currentPage=1, currentKe
 function parseDate(val) {
   if (!val) return { text: "", raw: null };
   let d;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) d = new Date(val);
-  else if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    d = new Date(val);
+  } else if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(val)) {
     const [day, month, year] = val.split(/[-/]/);
     d = new Date(`${year}-${month}-${day}`);
-  } else d = new Date(val);
+  } else {
+    d = new Date(val);
+  }
   if (isNaN(d)) return { text: val, raw: null };
-
-  // Format tanggal DD-MM-YYYY
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
@@ -135,11 +127,10 @@ function fetchData(){
         return obj;
       });
 
-      // 🔥 Urutkan berdasarkan tanggal terbaru di atas
       allData.sort((a,b)=>{
         const da=a["TANGGALOBJ"], db=b["TANGGALOBJ"];
         if(!da || !db) return 0;
-        return db - da; // descending
+        return db - da;
       });
 
       filteredData=allData;
@@ -172,13 +163,14 @@ function getFilteredData() {
   const end = eDate ? new Date(eDate + "T23:59:59") : null;
 
   return allData.filter(row => {
-    const tgl = row["TANGGALOBJ"] instanceof Date ? row["TANGGALOBJ"] : null;
+    const tglObj = row["TANGGALOBJ"] instanceof Date ? row["TANGGALOBJ"] : null;
     let matchDate = true;
-    if (start && tgl) matchDate = tgl >= start;
-    if (end && tgl) matchDate = matchDate && tgl <= end;
+    if (start && tglObj) matchDate = tglObj >= start;
+    if (end && tglObj) matchDate = matchDate && tglObj <= end;
 
-    const matchText = currentKeyword
-      ? Object.values(row).some(v => String(v).toLowerCase().includes(currentKeyword))
+    const keyword = currentKeyword.trim().toLowerCase();
+    const matchText = keyword
+      ? Object.values(row).some(v => String(v).toLowerCase().includes(keyword))
       : true;
 
     return matchDate && matchText;
@@ -265,3 +257,5 @@ document.querySelectorAll("#menu button").forEach(btn=>{
 fetchData();
 setInterval(fetchData,60000);
 </script>
+</body>
+</html>
