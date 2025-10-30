@@ -219,24 +219,29 @@ function renderTable(){
       }
 
       if(["HASIL (RP)","NOMINAL (RP)","JUMLAH"].includes(key)) cls="nominal-cell";
-     // 👥 Kolom HADIR / IZIN / ALPHA jadi daftar menurun dengan nomor urut, tapi tidak ganda
+    // 👥 Kolom HADIR / IZIN / ALPHA jadi daftar menurun dengan format rapi
 if (["HADIR", "IZIN", "ALPHA"].includes(key)) {
   if (val) {
     val = val
-      // Lindungi gelar (S.Kom, ST, SE, SH, MT)
-      .replace(/(\bS\.Kom|\bST|\bSE|\bSH|\bMT)/gi, m => m.replace('.', '§'))
-      // Pisahkan per baris, koma, titik koma
       .split(/[\n,;]+/)
       .map(v => v.trim())
       .filter(v => v)
-      // Jika sudah ada angka di depan, jangan ditambah nomor lagi
-      .map((v, i) => v.match(/^\d+\./) ? v.replace(/§/g, '.') : `${i + 1}. ${v.replace(/§/g, '.')}`)
+      // Gabungkan baris yang hanya berisi gelar ke baris sebelumnya
+      .reduce((acc, curr) => {
+        if (/^(S\.Kom|ST|SE|SH|MT)$/i.test(curr) && acc.length > 0) {
+          acc[acc.length - 1] += " " + curr; // tambahkan ke nama sebelumnya
+        } else {
+          acc.push(curr);
+        }
+        return acc;
+      }, [])
+      // Tambahkan nomor urut jika belum ada
+      .map((v, i) => (v.match(/^\d+\./) ? v : `${i + 1}. ${v}`))
       .join("<br>");
   } else {
     val = "-";
   }
 }
-
       if(key==="FOTO"&&val) val=`<img src="${val}" alt="Foto">`;
       else val=highlightText(String(val),currentKeyword);
       return `<td class="${cls}">${val}</td>`;
