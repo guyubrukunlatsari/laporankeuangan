@@ -43,8 +43,19 @@ h1 {
   background:var(--accent);
   color:#000;
 }
-#menu button.active, #menu button:hover { background:var(--blue); }
+/* Tombol aktif lebih terang dan teks lebih jelas */
+#menu button.active { 
+  background: #00ff88;  /* hijau terang */
+  color: #000;          /* teks hitam agar kontras */
+  font-weight: 700;     /* tebal supaya terlihat jelas */
+}
 
+/* Tombol saat hover */
+#menu button:hover { 
+  background: #00cc66;  /* hijau sedikit lebih gelap */
+  color: #fff;          /* teks putih saat hover */
+}
+  
 .filter-container {
   display:flex;
   flex-wrap:wrap;
