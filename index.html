@@ -231,7 +231,26 @@ function fetchData(){
         if(obj["NOMINAL (RP)"]) obj["NOMINAL (RP)"]=formatRupiah(obj["NOMINAL (RP)"]);
         return obj;
       });
-      allData.sort((a,b)=>{ const da=a["TANGGALOBJ"],db=b["TANGGALOBJ"]; if(!da&&!db) return 0; if(!da) return 1; if(!db) return -1; return db-da; });
+      // Sorting berdasarkan kebutuhan setiap sheet
+if(currentSheet === "harian"){
+    // urut berdasarkan tanggal, terbaru di atas
+    allData.sort((a,b)=>{
+        const da = a["TANGGALOBJ"], db = b["TANGGALOBJ"];
+        if(!da && !db) return 0;
+        if(!da) return 1;
+        if(!db) return -1;
+        return db - da;
+    });
+} 
+else {
+    // untuk bulanan & pengeluaran: urut berdasarkan kolom NO descending
+    allData.sort((a,b)=>{
+        const na = Number(a["NO"]);
+        const nb = Number(b["NO"]);
+        if(isNaN(na) || isNaN(nb)) return 0;
+        return nb - na; // NO terbesar di atas
+    });
+}
       filteredData=allData;
       toggleDateInputs(currentSheet==="rekap");
       renderTable();
